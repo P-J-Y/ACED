@@ -8,6 +8,7 @@ from tensorflow.keras.optimizers import Adam
 import getdataset
 import matplotlib.pyplot as plt
 import tensorflow.keras.regularizers as tfkreg
+import aced_utils
 
 timeSteps = 7501
 features = 9
@@ -67,7 +68,7 @@ model.summary()
 opt = Adam(learning_rate=0.0005, beta_1=0.9, beta_2=0.999, decay=0.01)
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=["accuracy"])
 history = model.fit(xtrain,ytrain,batch_size=2,epochs=20,verbose=1,validation_split=0.1)
-model.save('./model/my_model.h5')
+model.save('./model/v1/my_model.h5')
 plt.figure()
 plt.plot(history.history['loss'],'b',label='Training loss')
 plt.plot(history.history['val_loss'], 'r', label='Validation val_loss')
@@ -75,4 +76,9 @@ plt.title('Traing and Validation loss')
 plt.legend()
 plt.xlabel('epoch')
 plt.ylabel('loss')
-plt.savefig('image/log/loss.jpg')
+plt.savefig('image/log/v1/loss.jpg')
+
+ypre = model.predict(xtrain)
+f1s,cache = aced_utils.fmeasure(ytrain,ypre)
+p,r = cache
+print("f1 = {}, precision = {}, recall = {}".format(f1s,p,r))
