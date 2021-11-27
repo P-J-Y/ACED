@@ -63,7 +63,7 @@ xtrain, ytrain = getdataset.creat_train_data(xdata, ydata)
 
 model = model(input_shape=(timeSteps, features))
 #tf.compat.v1.disable_v2_behavior() # model trained in tf1
-#model = tf.compat.v1.keras.models.load_model('./models/tr_model.h5')
+#model = tf.compat.v1.keras.models.load_model('./model/my_model.h5')
 model.summary()
 opt = Adam(learning_rate=0.0005, beta_1=0.9, beta_2=0.999, decay=0.01)
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=["accuracy"])
