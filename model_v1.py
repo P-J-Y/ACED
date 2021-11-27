@@ -7,9 +7,11 @@ from tensorflow.keras.layers import GRU, Bidirectional, BatchNormalization, Resh
 from tensorflow.keras.optimizers import Adam
 import getdataset
 import matplotlib.pyplot as plt
+import tensorflow.keras.regularizers as tfkreg
 
 timeSteps = 7501
 features = 9
+lambda_l2 = 0.005
 
 def model(input_shape):
     """
@@ -31,17 +33,20 @@ def model(input_shape):
     # X = Dropout(0.8)(X)  # dropout (use 0.8)
 
     # 第二步：第一个 GRU 层 (≈4 lines)
-    X = GRU(units=128, return_sequences=True)(X)  # GRU (使用128个单元并返回序列)
-    X = Dropout(0.8)(X)  # dropout (use 0.8)
+    X = GRU(units=64, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
+    #X = Dropout(0.6)(X)  # dropout (use 0.8)
     X = BatchNormalization()(X)  # Batch normalization 批量标准化
 
     # 第三步: 第二个 GRU 层  (≈4 lines)
-    X = GRU(units=128, return_sequences=True)(X)  # GRU (使用128个单元并返回序列)
-    X = Dropout(0.8)(X)  # dropout (use 0.8)
+    X = GRU(units=64, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
+    #X = Dropout(0.6)(X)  # dropout (use 0.8)
     X = BatchNormalization()(X)  # Batch normalization 批量标准化
-    X = Dropout(0.8)(X)  # dropout (use 0.8)
+    #X = Dropout(0.6)(X)  # dropout (use 0.8)
 
     # 第四步： 时间分布全连接层 (≈1 line)
+    X = Dense(16,activation="relu",kernel_regularizer=tfkreg.l2(lambda_l2))(X)
+    #X = Dropout(0.6)(X)
+    X = BatchNormalization()(X)
     X = TimeDistributed(Dense(1, activation="sigmoid"))(X)  # time distributed  (sigmoid)
 
     model = Model(inputs=X_input, outputs=X)
@@ -59,13 +64,15 @@ model = model(input_shape=(timeSteps, features))
 #tf.compat.v1.disable_v2_behavior() # model trained in tf1
 #model = tf.compat.v1.keras.models.load_model('./models/tr_model.h5')
 model.summary()
-opt = Adam(learning_rate=0.0001, beta_1=0.9, beta_2=0.999, decay=0.01)
+opt = Adam(learning_rate=0.0005, beta_1=0.9, beta_2=0.999, decay=0.01)
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=["accuracy"])
-history = model.fit(xtrain,ytrain,batch_size = 5,epochs=10,verbose=1,validation_split=0.1)
+history = model.fit(xtrain,ytrain,batch_size=2,epochs=10,verbose=1,validation_split=0.1)
 model.save('./model/my_model.h5')
 plt.figure()
 plt.plot(history.history['loss'],'b',label='Training loss')
-plt.title('Traing loss')
+plt.plot(history.history['val_loss'], 'r', label='Validation val_loss')
+plt.title('Traing and Validation loss')
+plt.legend()
 plt.xlabel('epoch')
 plt.ylabel('loss')
 plt.savefig('image/log/loss.jpg')
