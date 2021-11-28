@@ -11,7 +11,7 @@ import tensorflow.keras.regularizers as tfkreg
 import aced_utils
 
 timeSteps = 600
-features = 9
+features = 6
 lambda_l2 = 0.008
 lr = 0.0004
 
@@ -35,12 +35,12 @@ def model(input_shape):
     # X = Dropout(0.8)(X)  # dropout (use 0.8)
 
     # 第二步：第一个 GRU 层 (≈4 lines)
-    X = GRU(units=64, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
+    X = GRU(units=32, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
     #X = Dropout(0.6)(X)  # dropout (use 0.8)
     X = BatchNormalization()(X)  # Batch normalization 批量标准化
 
     # 第三步: 第二个 GRU 层  (≈4 lines)
-    X = GRU(units=64, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
+    X = GRU(units=32, return_sequences=True,kernel_regularizer=tfkreg.l2(lambda_l2),)(X)  # GRU (使用128个单元并返回序列)
     #X = Dropout(0.6)(X)  # dropout (use 0.8)
     X = BatchNormalization()(X)  # Batch normalization 批量标准化
     #X = Dropout(0.6)(X)  # dropout (use 0.8)
@@ -56,7 +56,7 @@ def model(input_shape):
     return model
 
 
-fileName = 'data/train_v1_2.mat'
+fileName = 'data/train_v1_3.mat'
 file = h5py.File(fileName)  # "eventSteps","eventTimes","xdata","ydata","means","stds"
 xdata = file['xdata']
 ydata = file['ydata']
