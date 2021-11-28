@@ -10,9 +10,10 @@ import matplotlib.pyplot as plt
 import tensorflow.keras.regularizers as tfkreg
 import aced_utils
 
-timeSteps = 7501
+timeSteps = 600
 features = 9
-lambda_l2 = 0.005
+lambda_l2 = 0.008
+lr = 0.0004
 
 def model(input_shape):
     """
@@ -55,7 +56,7 @@ def model(input_shape):
     return model
 
 
-fileName = 'data/train_v1.mat'
+fileName = 'data/train_v1_2.mat'
 file = h5py.File(fileName)  # "eventSteps","eventTimes","xdata","ydata","means","stds"
 xdata = file['xdata']
 ydata = file['ydata']
@@ -63,11 +64,11 @@ xtrain, ytrain = getdataset.creat_train_data(xdata, ydata)
 
 model = model(input_shape=(timeSteps, features))
 #tf.compat.v1.disable_v2_behavior() # model trained in tf1
-#model = tf.compat.v1.keras.models.load_model('./model/my_model.h5')
+#model = tf.compat.v1.keras.models.load_model('./model/v1/my_model.h5')
 model.summary()
-opt = Adam(learning_rate=0.0005, beta_1=0.9, beta_2=0.999, decay=0.01)
+opt = Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, decay=0.01)
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=["accuracy"])
-history = model.fit(xtrain,ytrain,batch_size=2,epochs=20,verbose=1,validation_split=0.1)
+history = model.fit(xtrain,ytrain,batch_size=16,epochs=40,verbose=1,validation_split=0.1)
 model.save('./model/v1/my_model.h5')
 plt.figure()
 plt.plot(history.history['loss'],'b',label='Training loss')
