@@ -26,16 +26,14 @@ def creat_train_data(xdata,ydata):
     return xtrain,ytrain
 
 if __name__ == '__main__':
-    fileName = 'data/train_v5.mat'
+    fileName = 'data/train_v7_1.mat'
     file = h5py.File(fileName) # "eventSteps","eventTimes","xdata","ydata","means","stds"
     xdata = file['xdata']
     ydata = file['ydata']
-    means = file['means']
-    stds = file['stds']
-    eventTimes = file['eventTimes']
+    eventTimes = file['times']
 
-    idx = 1
-    plotEvent(idx, xdata, ydata, eventTimes)
-    xtrain,ytrain = creat_train_data(xdata,ydata)
+    # idx = 1
+    # plotEvent(idx, xdata, ydata, eventTimes)
+    # xtrain,ytrain = creat_train_data(xdata,ydata)
 
     print("ok?")
