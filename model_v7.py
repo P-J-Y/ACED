@@ -146,7 +146,7 @@ if __name__=='__main__':
     space = {
         'lr': hp.loguniform('lr', -10, -0),
         'lambda_l2': hp.loguniform('lambda_l2', -10, -0),
-        'batch_size': hp.choice('batch_size', [32,])
+        'batch_size': hp.choice('batch_size', [128,])
     }
 
     f1 = 0
