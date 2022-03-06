@@ -144,15 +144,15 @@ if __name__=='__main__':
     from tensorflow.keras.callbacks import EarlyStopping
 
     space = {
-        'lr': hp.loguniform('lr', -10, -0),
-        'lambda_l2': hp.loguniform('lambda_l2', -10, -0),
-        'batch_size': hp.choice('batch_size', [128,])
+        'lr': hp.loguniform('lr', -10, -3),
+        'lambda_l2': hp.loguniform('lambda_l2', -10, -3),
+        'batch_size': hp.choice('batch_size', [256,])
     }
 
     f1 = 0
-    workidx = 0
+    workidx = 1
     print('work {}'.format(workidx))
-    maxtrailnum = 50
+    maxtrailnum = 20
     def trainAmodel(params):
         global xtrain, xdev, ytrain, ydev
         global f1, workidx
