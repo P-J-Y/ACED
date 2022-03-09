@@ -1,5 +1,12 @@
 # 彭镜宇 2022-03-06
 # 对不同的算法进行评价
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from aced_utils import *
+import datetime
+import os
 
 def checkIcme(icme,args):
     '''
@@ -81,13 +88,7 @@ def evaluateIcme(icmes,ys,args):
 
 
 #################### SWICS ####################
-import h5py
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from aced_utils import *
-import datetime
-import os
+
 
 
 
@@ -102,7 +103,7 @@ def loaddata_swics():
 
 
 def SWICS(args):
-    icme = args['O76'] >= 6.008*np.exp(-0.00578*args['Vp'])
+    icme = args['O76'] >= 6.008*np.exp(-0.00578*args['Vp']) # Vp km/s
     return icme
 
 
@@ -180,7 +181,7 @@ def plot_swics(args, icmes, ys=None, eval=None):
         os.makedirs('image/eval/SWICS')
     plt.savefig('image/eval/SWICS/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
 
-def eventTest_swics(eventIdx):
+def eventTest_swics(eventIdx,eventTimes,eventSteps,xdata,ydata):
     eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
     # convert to datetime
     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
@@ -200,11 +201,425 @@ def eventTest_swics(eventIdx):
     else:
         print('Final: No ICME detected!')
 
+##################### XB #####################
 
+# K to eV
+def K2eV(K):
+    return K * 8.6173324e-5
+
+def loaddata_xb():
+    fileName = 'data/eval/XB/data.mat'
+    file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
+    xdata = file['xdata']
+    ydata = file['ydata']
+    eventTimes = file['eventEpochs']
+    eventSteps = file['eventSteps']
+    file.close()
+    return xdata,ydata,eventTimes,eventSteps
+
+
+def XB(args):
+    icme = 0.841*args['Mag']*(args['Np']**-0.315)*(args['Tp']**-0.0222)*(args['Vp']**-0.171) > 1 # Vp in km/s, np in cm-3, B in nT, Tp in eV
+    return icme
+
+
+def plot_xb(args, icmes, ys=None, eval=None):
+    fig = plt.figure(figsize=(16, 9))
+    ax1 = fig.add_subplot(511)
+    ax1.plot(args['time'], args['Np'], label='Np')
+    ax1.set_ylabel('Np cm$^{-3}$', fontsize=16)
+    ax1.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax1.set_xticklabels([])
+    ax2 = fig.add_subplot(512)
+    ax2.plot(args['time'], args['Tp'], label='Tp')
+    ax2.set_ylabel('Tp eV', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(513)
+    ax2.plot(args['time'], args['Vp'], label='Vp')
+    ax2.set_ylabel('Vp km/s', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(514)
+    ax2.plot(args['time'], args['Mag'], label='Mag')
+    ax2.set_ylabel('B nT', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax3 = fig.add_subplot(515)
+    idx = 0
+    for icme in icmes:
+        if idx == 0:
+            line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+            idx += 1
+        else:
+            ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    if ys is not None:
+        idx = 0
+        for y in ys:
+            if idx == 0:
+                line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                idx += 1
+            else:
+                ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+        if eval is None:
+            ax3.legend(handles=[line1, line2], labels=['XB', 'R&C'])
+        else:
+            overlapLen = len(eval['overlap'])
+            ax1.set_title('XB P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+            # plot overlap
+            idx = 0
+            for i in range(overlapLen):
+                if idx == 0:
+                    line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
+                                      linewidth=3)
+                    idx += 1
+                else:
+                    ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+            ax3.legend(handles=[line1, line2, line3], labels=['XB', 'R&C', 'overlap'])
+
+    # set ylabel
+    ax3.set_ylabel('ICME',fontsize=16)
+    # set xlabel
+    ax3.set_xlabel('Time',fontsize=16)
+    # set xlim
+    ax3.set_xlim(args['time'][0],args['time'][-1])
+    # set ylim
+    ax3.set_ylim([0,1])
+    # close y ticks
+    ax3.set_yticklabels([])
+
+    # save figure
+    if not os.path.exists('image/eval/XB'):
+        os.makedirs('image/eval/XB')
+    plt.savefig('image/eval/XB/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+
+def eventTest_xb(eventIdx,eventTimes,eventSteps,xdata,ydata):
+    eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+    # convert to datetime
+    eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+    eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
+    eventNp = xdata[0, :eventSteps[0, eventIdx], eventIdx] # in cm-3
+    eventTp = K2eV(xdata[1, :eventSteps[0, eventIdx], eventIdx])  # in k, convert to eV
+    eventVp = xdata[2, :eventSteps[0, eventIdx], eventIdx] # in Km/s
+    eventMag = xdata[3, :eventSteps[0, eventIdx], eventIdx] # in nT
+
+    args = {'time': eventTime, 'Np': eventNp, 'Tp':eventTp, 'Vp': eventVp,'Mag':eventMag, 'y': ydata[:eventSteps[0, eventIdx], eventIdx]}
+    icme = XB(args)
+    icmes = checkIcme(icme, args)
+    ys = checkIcme(args['y'], args)
+    if icmes is not None:
+        eval_xb = evaluateIcme(icmes, ys, args)
+        if eval_xb['recall'] == 0:
+            print('Final: No ICME detected!')
+            return None
+        plot_xb(args,icmes,ys,eval_xb)
+    else:
+        print('Final: No ICME detected!')
+
+################## Genesis ##################
+from preprocessing import *
+
+def ToCME(tnow,
+          Tshock,
+          TextoTp,
+          cons,
+          NHetoNp=None,
+          Be=None,
+          Wa=1,
+          Wb=0,):
+
+    # 很多参数都是待定的，需要调试
+
+   # if tnow is between ctime1 and ctime2 after any Tshock
+
+   if Tshock.size==0:
+       Yt = cons['CT3'] * TextoTp - cons['CT4']
+       if Wa:
+           Ya = cons['CA3'] * NHetoNp - cons['CA4']
+       else:
+           Ya = 0
+       if Wb:
+           Yb = cons['CB3'] * Be - cons['CB4']
+       else:
+           Yb = 0
+   elif any( (tnow > (Tshock + cons['ctime1'])) * (tnow < (Tshock + cons['ctime2'])) ):
+       Yt = cons['CT1'] * TextoTp - cons['CT2']
+       if Wa:
+           Ya = cons['CA1'] * NHetoNp - cons['CA2']
+       else:
+           Ya = 0
+       if Wb:
+           Yb = cons['CB1'] * Be - cons['CB2']
+       else:
+           Yb = 0
+   else:
+       Yt = cons['CT3'] * TextoTp - cons['CT4']
+       if Wa:
+           Ya = cons['CA3'] * NHetoNp - cons['CA4']
+       else:
+           Ya = 0
+       if Wb:
+           Yb = cons['CB3'] * Be - cons['CB4']
+       else:
+           Yb = 0
+   Yt = Yt > 1.0
+   Ya = Ya > 1.0
+   Yb = Yb > 1.0
+   return (Yt + Ya * Wa + Yb * Wb) / (1 + Wa + Wb)
+
+def Genesis(args,cons,Wa=1,Wb=0):
+
+    def Genesis_inner(lastype,
+                      TOCME,
+                      TextoTp,
+                      tnow,
+                      tcme,
+                      tcme_end,
+                      cons,
+                      NHetoNp=0,
+                      Be=0,
+                      Wa=1,
+                      Wb=0):
+        '''
+
+        :param lastype: 0: None 1: CME 2: Not CME
+        :param TOCME:
+        :param TextoTp:
+        :param NHetoNp:
+        :param Be:
+        :param tocme_threshold:
+        :param Wa:
+        :param Wb:
+        :return:
+        '''
+        if lastype == 1:
+            if (TextoTp>cons['Tout']) or (Wa*NHetoNp>cons['Aout']) or (Wb*Be>cons['Bout']) or (TOCME>cons['tocme_threshold']):
+                tcme_end = max(tcme+cons['tstay'],tnow+cons['tlag'])
+                newtype = 1
+            elif tnow<tcme_end:
+                newtype = 1
+            else:
+                newtype = 2
+        else:
+            if TOCME>cons['tocme_threshold']:
+                tcme = tnow
+                tcme_end = max(tcme+cons['tstay'],tnow+cons['tlag'])
+                newtype = 1
+            else:
+                newtype = 2
+        return newtype, tcme, tcme_end
+
+    # 初始化
+    tcme = np.nan
+    tcme_end = np.nan
+    icme = np.zeros(len(args['time']), dtype=bool)
+    lastype = 0
+    TOCMEs = np.zeros(len(args['time']))
+
+    # 循环
+    for i in range(len(args['time'])):
+        if Wa and Wb:
+            TOCME = ToCME(args['time'][i],
+                          args['Tshock'],
+                          args['TextoTp'][i],
+                          cons,
+                          NHetoNp=args['NHetoNp'][i],
+                          Be=args['Be'][i],
+                          Wa=Wa,
+                          Wb=Wb,)
+        elif Wa:
+            TOCME = ToCME(args['time'][i],
+                          args['Tshock'],
+                          args['TextoTp'][i],
+                          cons,
+                          NHetoNp=args['NHetoNp'][i],
+                          Wa=Wa,
+                          Wb=Wb,)
+        elif Wb:
+            TOCME = ToCME(args['time'][i],
+                          args['Tshock'],
+                          args['TextoTp'][i],
+                          cons,
+                          Be=args['Be'][i],
+                          Wa=Wa,
+                          Wb=Wb,)
+        else:
+            TOCME = ToCME(args['time'][i],
+                          args['Tshock'],
+                          args['TextoTp'][i],
+                          cons,
+                          Wa=Wa,
+                          Wb=Wb,)
+        TOCMEs[i] = TOCME
+        if Wa and Wb:
+            lastype, tcme, tcme_end = Genesis_inner(lastype,
+                                                    TOCME,
+                                                    args['TextoTp'][i],
+                                                    args['time'][i],
+                                                    tcme,
+                                                    tcme_end,
+                                                    cons,
+                                                    NHetoNp=args['NHetoNp'][i],
+                                                    Be=args['Be'][i],
+                                                    Wa=Wa,
+                                                    Wb=Wb,)
+        elif Wa:
+            lastype, tcme, tcme_end = Genesis_inner(lastype,
+                                                    TOCME,
+                                                    args['TextoTp'][i],
+                                                    args['time'][i],
+                                                    tcme,
+                                                    tcme_end,
+                                                    cons,
+                                                    NHetoNp=args['NHetoNp'][i],
+                                                    Wa=Wa,
+                                                    Wb=Wb,)
+        elif Wb:
+            lastype, tcme, tcme_end = Genesis_inner(lastype,
+                                                    TOCME,
+                                                    args['TextoTp'][i],
+                                                    args['time'][i],
+                                                    tcme,
+                                                    tcme_end,
+                                                    cons,
+                                                    Be=args['Be'][i],
+                                                    Wa=Wa,
+                                                    Wb=Wb,)
+        else:
+            lastype, tcme, tcme_end = Genesis_inner(lastype,
+                                                    TOCME,
+                                                    args['TextoTp'][i],
+                                                    args['time'][i],
+                                                    tcme,
+                                                    tcme_end,
+                                                    cons,
+                                                    Wa=Wa,
+                                                    Wb=Wb,)
+
+        icme[i] = lastype==1
+    args['TOCME'] = TOCMEs
+    return icme
+
+def plot_genesis(args, icmes, ys=None, eval=None):
+    fig = plt.figure(figsize=(10, 12))
+
+    ax1 = fig.add_subplot(711)
+    ax1.plot(args['time'], args['Vp'], label='Vp')
+    ax1.set_ylabel('Vp Km/s', fontsize=16)
+    ax1.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax1.set_xticklabels([])
+    ax2 = fig.add_subplot(712)
+    ax2.plot(args['time'], args['Tp']*1e-4, label='Tp')
+    ax2.set_ylabel('Tp 10$^4$K', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(713)
+    ax2.plot(args['time'], args['TextoTp'], label='TextoTp')
+    ax2.set_ylabel('T$_{ex}$/T$_p$', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(714)
+    ax2.plot(args['time'], args['NHetoNp'], label='NhetoNp')
+    ax2.set_ylabel('N$_{He}$/N$_p$', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(715)
+    ax2.plot(args['time'], args['Be'], label='BDE')
+    ax2.set_ylabel('BDE', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    ax2.set_ylim(0, 1)
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax2 = fig.add_subplot(716)
+    ax2.plot(args['time'], args['TOCME'], label='TOCME')
+    ax2.set_ylabel('TOCME', fontsize=16)
+    ax2.set_xlim(args['time'][0], args['time'][-1])
+    ax2.set_ylim(0, 1)
+    # close x ticks
+    ax2.set_xticklabels([])
+    ax3 = fig.add_subplot(717)
+    idx = 0
+    for icme in icmes:
+        if idx == 0:
+            line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+            idx += 1
+        else:
+            ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    if ys is not None:
+        idx = 0
+        for y in ys:
+            if idx == 0:
+                line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                idx += 1
+            else:
+                ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+        if eval is None:
+            ax3.legend(handles=[line1, line2], labels=['Genesis', 'R&C'])
+        else:
+            overlapLen = len(eval['overlap'])
+            ax1.set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+            # plot overlap
+            idx = 0
+            for i in range(overlapLen):
+                if idx == 0:
+                    line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
+                                      linewidth=3)
+                    idx += 1
+                else:
+                    ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+            ax3.legend(handles=[line1, line2, line3], labels=['Genesis', 'R&C', 'overlap'])
+
+    # set ylabel
+    ax3.set_ylabel('ICME',fontsize=16)
+    # set xlabel
+    ax3.set_xlabel('Time',fontsize=16)
+    # set xlim
+    ax3.set_xlim(args['time'][0],args['time'][-1])
+    # set ylim
+    ax3.set_ylim([0,1])
+    # close y ticks
+    ax3.set_yticklabels([])
+
+    # save figure
+    if not os.path.exists('image/eval/Genesis'):
+        os.makedirs('image/eval/Genesis')
+    plt.savefig('image/eval/Genesis/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+
+def eventTest_genesis(args):
+
+    icme = Genesis(args,Wa=1,Wb=1,ctime1=datetime.timedelta(hours=10),ctime2=datetime.timedelta(hours=10))
+    icmes = checkIcme(icme, args)
+    ys = checkIcme(args['y'], args)
+    if icmes is not None:
+        eval_genesis = evaluateIcme(icmes, ys, args)
+        if eval_genesis['recall'] == 0:
+            print('Final: No ICME detected!')
+            return None
+        plot_genesis(args,icmes,ys,eval_genesis)
+    else:
+        print('Final: No ICME detected!')
 
 
 if __name__ == '__main__':
-    xdata,ydata,eventTimes,eventSteps = loaddata_swics()
+    # xdata,ydata,eventTimes,eventSteps = loaddata_swics()
+    # for i in range(eventSteps.shape[1]):
+    #     eventTest_swics(i,eventTimes,eventSteps,xdata,ydata)
+
+    # xdata,ydata,eventTimes,eventSteps = loaddata_xb()
+    # for i in range(eventSteps.shape[1]):
+    #     eventTest_xb(i,eventTimes,eventSteps,xdata,ydata)
+
+    eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = load_original_data_genesis()
     for i in range(eventSteps.shape[1]):
-        eventTest_swics(i)
+        print(i)
+        args = pre_genesis(i, eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa)
+        eventTest_genesis(args)
 print('SWICS')
