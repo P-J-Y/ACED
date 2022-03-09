@@ -17,7 +17,7 @@ def checkIcme(icme,args):
 
     if sum(icme) == 0:
         print('No icme detected!')
-        return
+        return None
     else:
         print('Icme detected!')
         # diff of icme is 1
@@ -45,10 +45,9 @@ def checkIcme(icme,args):
         icmes.append((args['time'][theStart],args['time'][theEnd]))
         return icmes
 
-def evaluateIcme(icmes,ys,args):
+def evaluateIcme(icmes,ys):
     # icmes: list of tuple (start,end), icme detected
     # ys: list of tuple (start,end), icme list given
-    # args: dict
     # find the overlap between icme detected and icme list given
     # return: dict
     # {'icme_detected':icme_detected, 'icme_list':icme_list, 'overlap':overlap, 'precision':precision, 'recall':recall}
@@ -193,7 +192,7 @@ def eventTest_swics(eventIdx,eventTimes,eventSteps,xdata,ydata):
     icmes = checkIcme(icme, args)
     ys = checkIcme(args['y'], args)
     if icmes is not None:
-        eval_swics = evaluateIcme(icmes, ys, args)
+        eval_swics = evaluateIcme(icmes, ys)
         if eval_swics['recall'] == 0:
             print('Final: No ICME detected!')
             return None
@@ -312,7 +311,7 @@ def eventTest_xb(eventIdx,eventTimes,eventSteps,xdata,ydata):
     icmes = checkIcme(icme, args)
     ys = checkIcme(args['y'], args)
     if icmes is not None:
-        eval_xb = evaluateIcme(icmes, ys, args)
+        eval_xb = evaluateIcme(icmes, ys)
         if eval_xb['recall'] == 0:
             print('Final: No ICME detected!')
             return None
@@ -599,7 +598,7 @@ def eventTest_genesis(args):
     icmes = checkIcme(icme, args)
     ys = checkIcme(args['y'], args)
     if icmes is not None:
-        eval_genesis = evaluateIcme(icmes, ys, args)
+        eval_genesis = evaluateIcme(icmes, ys)
         if eval_genesis['recall'] == 0:
             print('Final: No ICME detected!')
             return None

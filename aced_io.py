@@ -9,10 +9,17 @@
 
 
 import datetime
+import os
+
+import numpy as np
+from matplotlib import pyplot as plt
+
 import preprocessing
 import evaluate
 
 
+
+################ constants ################
 constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'CB1':23,'CB2':1.15,'CB3':16.67,'CB4':1.0,
                      'CT1':23,'CT2':1.15,'CT3':16.67,'CT4':1.0,
@@ -25,9 +32,119 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
+plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+feature2time = {'Vp':'Vp_time',
+                'Tp':'Tp_time',
+                'TextoTp':'Vp_time',
+                'NHetoNp':'NHetoNp_time',
+                'PA':'PA_time',
+                'Be':'time',
+                'TOCME':'time'}
+
+
+################ functions ################
+def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
+                 plot_features=plot_features_genesis,feature2time=feature2time,
+                 figpath='image/eval/Genesis/test'):
+
+    plot_in_args = ['Vp','TextoTp','NHetoNp',]
+    plot_in_args_avg = ['TOCME','Be']
+    feature2title = {'Vp':'Vp Km/s','Tp':'Tp 10$^4$K','TextoTp':'Tex/Tp','NHetoNp':'N$_{He}$/Np','Be':'BDE','TOCME':'TOCME'}
+
+    panelnum = len(plot_features)+1
+    eventnum = len(icmes)
+    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(8,4*panelnum))
+
+    if eval is not None:
+        axes[0].set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+        for i in range(eventnum):
+            if i == 0:
+                line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+            else:
+                axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+        for i in range(len(ys)):
+            if i ==0:
+                line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+            else:
+                axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+        for i in range(len(eval['overlap'])):
+            if i == 0:
+                line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+            else:
+                axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+        axes[-1].legend(handles=[line1, line2, line3], labels=['Genesis', 'list', 'overlap'])
+
+    else:
+        axes[0].set_title('Genesis', fontsize=16)
+        for i in range(eventnum):
+            axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    # set ylabel
+    axes[-1].set_ylabel('ICME', fontsize=16)
+    # set xlabel
+    axes[-1].set_xlabel('Time', fontsize=16)
+    # set xlim
+    axes[-1].set_xlim(args['time'][0], args['time'][-1])
+    # set ylim
+    axes[-1].set_ylim([0, 1])
+    # close y ticks
+    axes[-1].set_yticklabels([])
+
+    for i in range(len(plot_features)):
+        if plot_features[i] in plot_in_args:
+            axes[i].plot(args[feature2time[plot_features[i]]], args[plot_features[i]], 'b-', linewidth=1)
+            axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_xticklabels([])
+            if plot_features[i] in ['Be','TOCME']:
+                axes[i].set_ylim([0, 1])
+        elif plot_features[i] in plot_in_args_avg:
+            axes[i].plot(args_avg[feature2time[plot_features[i]]], args_avg[plot_features[i]], 'b-', linewidth=1)
+            axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_xticklabels([])
+            if plot_features[i] in ['Be','TOCME']:
+                axes[i].set_ylim([0, 1])
+        elif plot_features[i] == 'PA':
+            anglenum = np.shape(args['PA'])[0]
+            deltaangle = 180 / anglenum
+            angles = np.arange(0, 180, deltaangle)+deltaangle/2
+            X,Y = np.meshgrid(args['PA_time'],angles)
+            axes[i].contourf(X,Y,10*np.log10(args['PA']),cmap='jet')
+            axes[i].set_ylabel('PA(#) °(dB)', fontsize=16)
+            axes[i].set_xticklabels([])
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_ylim([0, 180])
+        elif plot_features[i] == 'Tp':
+            axes[i].plot(args['Tp_time'], args['Tp'] * 1e-4, 'b-', linewidth=1)
+            axes[i].set_ylabel(feature2title['Tp'], fontsize=16)
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_xticklabels([])
+
+
+    # save figure
+    if not os.path.exists(figpath):
+        os.makedirs(figpath)
+    plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ################ Genesis ################
-def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1):
+def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=False,plot_features=plot_features_genesis,feature2time=feature2time):
     '''
     ——必须的数据7个：
     Vp: 质子速度 Km/s, shape=#timepoints
@@ -89,12 +206,31 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1):
     preprocessing.shock_genesis(args_avg,constants)
     ### 给出time每个时间点的icme判定
     icme = evaluate.Genesis(args_avg,constants,Wa=Wa,Wb=Wb)
+    icmes = evaluate.checkIcme(icme,args_avg)
+    if icmes is None:
+        print('Final: No ICME detected!')
+        return None
+    if test:
+        assert 'y' in args, "没有检测到输入权威icme标记y，请关闭测试模式，或检查输入数据"
+        ys = evaluate.checkIcme(args['y'],args_avg)
+        eval_genesis = evaluate.evaluateIcme(icmes, ys)
+        if eval_genesis['recall'] == 0:
+            print('Final: No ICME detected!')
+            return None
+        elif ifplot:
+            plot_genesis(args,args_avg,icmes,ys=ys,eval=eval_genesis,plot_features=plot_features,feature2time=feature2time)
+    else:
+        if ifplot:
+            plot_genesis(args,args_avg,icmes,plot_features=plot_features,feature2time=feature2time)
 
-    return icme
+
+
+
+    return icme,args_avg
 
 if __name__ == '__main__':
     eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
-    eventIdx = 112
+    eventIdx = 10
     eventPA = padata[:,:eventSteps_pa[0,eventIdx],eventIdx]
     eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]   # Np;Tp;Vp;He4top
 
@@ -121,6 +257,6 @@ if __name__ == '__main__':
         'y':ydata[:eventSteps[0, eventIdx],eventIdx],
     }
 
-    icme = genesis_io(args)
+    icme,args_avg = genesis_io(args,test=True,Wa=1,Wb=1,ifplot=1,)
     print('genesis')
 
