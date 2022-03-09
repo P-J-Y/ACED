@@ -3,6 +3,7 @@
 # 彭镜宇(Peng jingyu)
 # 2022-03-09
 # 1 genesis在Wb=0的时候，输出TOcme可能还要调试一下
+# 2 应该确保t_avg和输出数据的时间点time一致
 
 
 
@@ -115,7 +116,7 @@ if __name__ == '__main__':
         'Tp':eventSWE[1,:],'Tp_time':eventsweT,
         'Vp':eventSWE[2,:],'Vp_time':eventsweT,
         'NHetoNp':eventSWE[3,:],'NHetoNp_time':eventsweT,
-        # 'PA':eventPA,'PA_time':eventpaT,
+        'PA':eventPA,'PA_time':eventpaT,
         'time':eventT,
         'y':ydata[:eventSteps[0, eventIdx],eventIdx],
     }
