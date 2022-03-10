@@ -213,12 +213,11 @@ def loaddata_xb():
     ydata = file['ydata']
     eventTimes = file['eventEpochs']
     eventSteps = file['eventSteps']
-    file.close()
     return xdata,ydata,eventTimes,eventSteps
 
 
 def XB(args):
-    icme = 0.841*args['Mag']*(args['Np']**-0.315)*(args['Tp']**-0.0222)*(args['Vp']**-0.171) > 1 # Vp in km/s, np in cm-3, B in nT, Tp in eV
+    icme = 0.841*args['Mag']*(args['Np']**-0.315)*(K2eV(args['Tp'])**-0.0222)*(args['Vp']**-0.171) > 1 # Vp in km/s, np in cm-3, B in nT, Tp in K(通过K2eV转换成eV)
     return icme
 
 
@@ -302,7 +301,7 @@ def eventTest_xb(eventIdx,eventTimes,eventSteps,xdata,ydata):
     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
     eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
     eventNp = xdata[0, :eventSteps[0, eventIdx], eventIdx] # in cm-3
-    eventTp = K2eV(xdata[1, :eventSteps[0, eventIdx], eventIdx])  # in k, convert to eV
+    eventTp = xdata[1, :eventSteps[0, eventIdx], eventIdx]  # in k
     eventVp = xdata[2, :eventSteps[0, eventIdx], eventIdx] # in Km/s
     eventMag = xdata[3, :eventSteps[0, eventIdx], eventIdx] # in nT
 
