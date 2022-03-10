@@ -42,7 +42,7 @@ list_features = ['Vp','Tp','Np']
 
 ################ functions ################
 
-def listIcmes(icmes,args,list_features=list_features):
+def listIcmes(args,list_features=list_features):
     '''
     计算每个识别出的icme的参数均值，并输出一个json表格
     :param icmes:
@@ -50,9 +50,18 @@ def listIcmes(icmes,args,list_features=list_features):
     :param list_features:
     :return:
     '''
-    features = np.zeros()
-    for icme in icmes:
-        pass
+    icmes = args['icmes']
+    icmelist = []
+    for i in range(len(icmes)):
+        features = {
+            'start_time':icmes[i][0], 'end_time':icmes[i][1],
+        }
+        timepoints = (args['time']>icmes[i][0]) * (args['time']<icmes[i][1])
+        for feature in list_features:
+            features[feature] = np.nanmean(args[feature][timepoints])
+
+        icmelist.append(features)
+    return icmelist
 
 
 def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
@@ -283,23 +292,23 @@ def swics_io(args,test=False,ifplot=False,plot_features=plot_features_swics):
     ### 给出time每个时间点的icme判定
     icme = evaluate.SWICS(args)
     icmes = evaluate.checkIcme(icme,args)
+    args['icme'] = icme
+    args['icmes'] = icmes
     if icmes is None:
         print('Final: No ICME detected!')
-        return None,None
+        return None
     if test:
         assert 'y' in args, "没有检测到输入权威icme标记y，请关闭测试模式，或检查输入数据"
         ys = evaluate.checkIcme(args['y'],args)
         eval_swics = evaluate.evaluateIcme(icmes, ys)
         if eval_swics['recall'] == 0:
             print('Final: No ICME detected!')
-            return None,None
+            return None
         elif ifplot:
             plot_swics(args,icmes,ys=ys,eval=eval_swics,plot_features=plot_features)
     else:
         if ifplot:
             plot_swics(args,icmes,plot_features=plot_features)
-
-    return icme, args
 
 
 ################ XB ################
@@ -327,23 +336,24 @@ def xb_io(args,test=False,ifplot=False,plot_features=plot_features_xb):
     ### 给出time每个时间点的icme判定
     icme = evaluate.XB(args)
     icmes = evaluate.checkIcme(icme,args)
+    args['icme'] = icme
+    args['icmes'] = icmes
     if icmes is None:
         print('Final: No ICME detected!')
-        return None, None
+        return None
     if test:
         assert 'y' in args, "没有检测到输入权威icme标记y，请关闭测试模式，或检查输入数据"
         ys = evaluate.checkIcme(args['y'],args)
         eval_xb = evaluate.evaluateIcme(icmes, ys)
         if eval_xb['recall'] == 0:
             print('Final: No ICME detected!')
-            return None, None
+            return None
         elif ifplot:
             plot_xb(args,icmes,ys=ys,eval=eval_xb,plot_features=plot_features)
     else:
         if ifplot:
             plot_xb(args,icmes,plot_features=plot_features)
 
-    return icme,args
 
 
 
@@ -418,27 +428,30 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=Fals
     ### 给出time每个时间点的icme判定
     icme = evaluate.Genesis(args_avg,constants,Wa=Wa,Wb=Wb)
     icmes = evaluate.checkIcme(icme,args_avg)
+    args_avg['icme'] = icme
+    args_avg['icmes'] = icmes
     if icmes is None:
         print('Final: No ICME detected!')
-        return None,None
+        return None
     if test:
         assert 'y' in args, "没有检测到输入权威icme标记y，请关闭测试模式，或检查输入数据"
         ys = evaluate.checkIcme(args['y'],args_avg)
         eval_genesis = evaluate.evaluateIcme(icmes, ys)
         if eval_genesis['recall'] == 0:
             print('Final: No ICME detected!')
-            return None,None
+            return None
         elif ifplot:
             plot_genesis(args,args_avg,icmes,ys=ys,eval=eval_genesis,plot_features=plot_features)
     else:
         if ifplot:
             plot_genesis(args,args_avg,icmes,plot_features=plot_features)
 
-    return icme,args_avg
+    return args_avg
 
 if __name__ == '__main__':
+    ### genesis
     # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
-    # eventIdx = 100
+    # eventIdx = 42
     # eventPA = padata[:,:eventSteps_pa[0,eventIdx],eventIdx]
     # eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]   # Np;Tp;Vp;He4top
     #
@@ -453,7 +466,7 @@ if __name__ == '__main__':
     #
     # eventT = event_epoch[:eventSteps[0,eventIdx],eventIdx]
     # eventT = (eventT - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventT = [datetime.datetime.fromtimestamp(t) for t in eventT]
+    # eventT = np.array([datetime.datetime.fromtimestamp(t) for t in eventT])
     #
     # args = {
     #     'Np':eventSWE[0,:],'Np_time':eventsweT,
@@ -465,26 +478,32 @@ if __name__ == '__main__':
     #     'y':ydata[:eventSteps[0, eventIdx],eventIdx],
     # }
     #
-    # icme,args_avg = genesis_io(args,test=True,Wa=1,Wb=1,ifplot=1,)
+    # args_avg = genesis_io(args,test=True,Wa=1,Wb=1,ifplot=1,)
+    # if args_avg is not None:
+    #     cmelist = listIcmes(args_avg,list_features=['Vp','Tp','Np','NHetoNp','TextoTp'])
+    ### SWICS
 
     # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
     # eventIdx = 20
     # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
     # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
+    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
     # args = {
     #     'time':eventTime,
     #     'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
     #     'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
     #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
     # }
-    # icme,args = swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
+    # swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
+    # if args is not None:
+        # icmelist = listIcmes(args)
 
+    ### xb
     xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_xb()
     eventIdx = 20
     eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
+    eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
     args = {
         'time':eventTime,
         'Vp':xdata[2, :eventSteps[0, eventIdx], eventIdx],
@@ -493,7 +512,8 @@ if __name__ == '__main__':
         'Mag':xdata[3, :eventSteps[0, eventIdx], eventIdx],
         'y':ydata[:eventSteps[0, eventIdx], eventIdx],
     }
-    icme,args = xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
-
+    xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
+    if args is not None:
+        icmelist = listIcmes(args)
     print('genesis')
 

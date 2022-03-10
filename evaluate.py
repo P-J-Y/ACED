@@ -106,99 +106,99 @@ def SWICS(args):
     return icme
 
 
-def plot_swics(args, icmes, ys=None, eval=None):
-    fig = plt.figure(figsize=(12, 6))
-    ax1 = fig.add_subplot(311)
-    ax1.plot(args['time'], args['O76'])
-    # set ylabel
-    ax1.set_ylabel('O76', fontsize=16)
-    # close x ticks
-    ax1.set_xticklabels([])
-    # set title
-    ax1.set_title('SWICS', fontsize=16)
-    # set xlim
-    ax1.set_xlim(args['time'][0], args['time'][-1])
-    ax2 = fig.add_subplot(312)
-    ax2.plot(args['time'], args['Vp'], label='V$_{p}$')
-    # set ylabel
-    ax2.set_ylabel('V$_{p}$ [Km/s]', fontsize=16)
-    # close x ticks
-    ax2.set_xticklabels([])
-    # set xlim
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    ax3 = fig.add_subplot(313)
-    idx = 0
-    for icme in icmes:
-        if idx == 0:
-            # set label
-            line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-            idx += 1
-        else:
-            ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-
-    idx = 0
-    if ys is not None:  # if ys is not None, plot ys
-        for y in ys:
-            if idx == 0:
-                # set label
-                line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-                idx += 1
-            else:
-                ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-        if eval is None:    # if eval is None, 标注就只有两个
-            ax3.legend(handles=[line1, line2], labels=['SWICS', 'R&C'])
-        else:
-            overlapLen = len(eval['overlap'])
-            ax1.set_title('SWICS P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
-            # plot overlap
-            idx = 0
-            for i in range(overlapLen):
-                if idx == 0:
-                    line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
-                                      linewidth=3)
-                    idx += 1
-                else:
-                    ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
-            ax3.legend(handles=[line1, line2, line3], labels=['SWICS', 'R&C', 'overlap'])
-
-
-
-
-    # set ylabel
-    ax3.set_ylabel('ICME',fontsize=16)
-    # set xlabel
-    ax3.set_xlabel('Time',fontsize=16)
-    # set xlim
-    ax3.set_xlim(args['time'][0],args['time'][-1])
-    # set ylim
-    ax3.set_ylim([0,1])
-    # close y ticks
-    ax3.set_yticklabels([])
-
-    # save figure
-    if not os.path.exists('image/eval/SWICS'):
-        os.makedirs('image/eval/SWICS')
-    plt.savefig('image/eval/SWICS/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
-
-def eventTest_swics(eventIdx,eventTimes,eventSteps,xdata,ydata):
-    eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    # convert to datetime
-    eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
-    eventO76 = xdata[0, :eventSteps[0, eventIdx], eventIdx]
-    eventVp = xdata[1, :eventSteps[0, eventIdx], eventIdx]
-    args = {'time': eventTime, 'O76': eventO76, 'Vp': eventVp, 'y': ydata[:eventSteps[0, eventIdx], eventIdx]}
-    icme = SWICS(args)
-    icmes = checkIcme(icme, args)
-    ys = checkIcme(args['y'], args)
-    if icmes is not None:
-        eval_swics = evaluateIcme(icmes, ys)
-        if eval_swics['recall'] == 0:
-            print('Final: No ICME detected!')
-            return None
-        plot_swics(args,icmes,ys,eval_swics)
-    else:
-        print('Final: No ICME detected!')
+# def plot_swics(args, icmes, ys=None, eval=None):
+#     fig = plt.figure(figsize=(12, 6))
+#     ax1 = fig.add_subplot(311)
+#     ax1.plot(args['time'], args['O76'])
+#     # set ylabel
+#     ax1.set_ylabel('O76', fontsize=16)
+#     # close x ticks
+#     ax1.set_xticklabels([])
+#     # set title
+#     ax1.set_title('SWICS', fontsize=16)
+#     # set xlim
+#     ax1.set_xlim(args['time'][0], args['time'][-1])
+#     ax2 = fig.add_subplot(312)
+#     ax2.plot(args['time'], args['Vp'], label='V$_{p}$')
+#     # set ylabel
+#     ax2.set_ylabel('V$_{p}$ [Km/s]', fontsize=16)
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     # set xlim
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     ax3 = fig.add_subplot(313)
+#     idx = 0
+#     for icme in icmes:
+#         if idx == 0:
+#             # set label
+#             line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#             idx += 1
+#         else:
+#             ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#
+#     idx = 0
+#     if ys is not None:  # if ys is not None, plot ys
+#         for y in ys:
+#             if idx == 0:
+#                 # set label
+#                 line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#                 idx += 1
+#             else:
+#                 ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#         if eval is None:    # if eval is None, 标注就只有两个
+#             ax3.legend(handles=[line1, line2], labels=['SWICS', 'R&C'])
+#         else:
+#             overlapLen = len(eval['overlap'])
+#             ax1.set_title('SWICS P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+#             # plot overlap
+#             idx = 0
+#             for i in range(overlapLen):
+#                 if idx == 0:
+#                     line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
+#                                       linewidth=3)
+#                     idx += 1
+#                 else:
+#                     ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+#             ax3.legend(handles=[line1, line2, line3], labels=['SWICS', 'R&C', 'overlap'])
+#
+#
+#
+#
+#     # set ylabel
+#     ax3.set_ylabel('ICME',fontsize=16)
+#     # set xlabel
+#     ax3.set_xlabel('Time',fontsize=16)
+#     # set xlim
+#     ax3.set_xlim(args['time'][0],args['time'][-1])
+#     # set ylim
+#     ax3.set_ylim([0,1])
+#     # close y ticks
+#     ax3.set_yticklabels([])
+#
+#     # save figure
+#     if not os.path.exists('image/eval/SWICS'):
+#         os.makedirs('image/eval/SWICS')
+#     plt.savefig('image/eval/SWICS/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+#
+# def eventTest_swics(eventIdx,eventTimes,eventSteps,xdata,ydata):
+#     eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+#     # convert to datetime
+#     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+#     eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
+#     eventO76 = xdata[0, :eventSteps[0, eventIdx], eventIdx]
+#     eventVp = xdata[1, :eventSteps[0, eventIdx], eventIdx]
+#     args = {'time': eventTime, 'O76': eventO76, 'Vp': eventVp, 'y': ydata[:eventSteps[0, eventIdx], eventIdx]}
+#     icme = SWICS(args)
+#     icmes = checkIcme(icme, args)
+#     ys = checkIcme(args['y'], args)
+#     if icmes is not None:
+#         eval_swics = evaluateIcme(icmes, ys)
+#         if eval_swics['recall'] == 0:
+#             print('Final: No ICME detected!')
+#             return None
+#         plot_swics(args,icmes,ys,eval_swics)
+#     else:
+#         print('Final: No ICME detected!')
 
 ##################### XB #####################
 
@@ -221,102 +221,102 @@ def XB(args):
     return icme
 
 
-def plot_xb(args, icmes, ys=None, eval=None):
-    fig = plt.figure(figsize=(16, 9))
-    ax1 = fig.add_subplot(511)
-    ax1.plot(args['time'], args['Np'], label='Np')
-    ax1.set_ylabel('Np cm$^{-3}$', fontsize=16)
-    ax1.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax1.set_xticklabels([])
-    ax2 = fig.add_subplot(512)
-    ax2.plot(args['time'], args['Tp'], label='Tp')
-    ax2.set_ylabel('Tp eV', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(513)
-    ax2.plot(args['time'], args['Vp'], label='Vp')
-    ax2.set_ylabel('Vp km/s', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(514)
-    ax2.plot(args['time'], args['Mag'], label='Mag')
-    ax2.set_ylabel('B nT', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax3 = fig.add_subplot(515)
-    idx = 0
-    for icme in icmes:
-        if idx == 0:
-            line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-            idx += 1
-        else:
-            ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-    if ys is not None:
-        idx = 0
-        for y in ys:
-            if idx == 0:
-                line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-                idx += 1
-            else:
-                ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-        if eval is None:
-            ax3.legend(handles=[line1, line2], labels=['XB', 'R&C'])
-        else:
-            overlapLen = len(eval['overlap'])
-            ax1.set_title('XB P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
-            # plot overlap
-            idx = 0
-            for i in range(overlapLen):
-                if idx == 0:
-                    line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
-                                      linewidth=3)
-                    idx += 1
-                else:
-                    ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
-            ax3.legend(handles=[line1, line2, line3], labels=['XB', 'R&C', 'overlap'])
-
-    # set ylabel
-    ax3.set_ylabel('ICME',fontsize=16)
-    # set xlabel
-    ax3.set_xlabel('Time',fontsize=16)
-    # set xlim
-    ax3.set_xlim(args['time'][0],args['time'][-1])
-    # set ylim
-    ax3.set_ylim([0,1])
-    # close y ticks
-    ax3.set_yticklabels([])
-
-    # save figure
-    if not os.path.exists('image/eval/XB'):
-        os.makedirs('image/eval/XB')
-    plt.savefig('image/eval/XB/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
-
-def eventTest_xb(eventIdx,eventTimes,eventSteps,xdata,ydata):
-    eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    # convert to datetime
-    eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
-    eventNp = xdata[0, :eventSteps[0, eventIdx], eventIdx] # in cm-3
-    eventTp = xdata[1, :eventSteps[0, eventIdx], eventIdx]  # in k
-    eventVp = xdata[2, :eventSteps[0, eventIdx], eventIdx] # in Km/s
-    eventMag = xdata[3, :eventSteps[0, eventIdx], eventIdx] # in nT
-
-    args = {'time': eventTime, 'Np': eventNp, 'Tp':eventTp, 'Vp': eventVp,'Mag':eventMag, 'y': ydata[:eventSteps[0, eventIdx], eventIdx]}
-    icme = XB(args)
-    icmes = checkIcme(icme, args)
-    ys = checkIcme(args['y'], args)
-    if icmes is not None:
-        eval_xb = evaluateIcme(icmes, ys)
-        if eval_xb['recall'] == 0:
-            print('Final: No ICME detected!')
-            return None
-        plot_xb(args,icmes,ys,eval_xb)
-    else:
-        print('Final: No ICME detected!')
+# def plot_xb(args, icmes, ys=None, eval=None):
+#     fig = plt.figure(figsize=(16, 9))
+#     ax1 = fig.add_subplot(511)
+#     ax1.plot(args['time'], args['Np'], label='Np')
+#     ax1.set_ylabel('Np cm$^{-3}$', fontsize=16)
+#     ax1.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax1.set_xticklabels([])
+#     ax2 = fig.add_subplot(512)
+#     ax2.plot(args['time'], args['Tp'], label='Tp')
+#     ax2.set_ylabel('Tp eV', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(513)
+#     ax2.plot(args['time'], args['Vp'], label='Vp')
+#     ax2.set_ylabel('Vp km/s', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(514)
+#     ax2.plot(args['time'], args['Mag'], label='Mag')
+#     ax2.set_ylabel('B nT', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax3 = fig.add_subplot(515)
+#     idx = 0
+#     for icme in icmes:
+#         if idx == 0:
+#             line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#             idx += 1
+#         else:
+#             ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#     if ys is not None:
+#         idx = 0
+#         for y in ys:
+#             if idx == 0:
+#                 line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#                 idx += 1
+#             else:
+#                 ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#         if eval is None:
+#             ax3.legend(handles=[line1, line2], labels=['XB', 'R&C'])
+#         else:
+#             overlapLen = len(eval['overlap'])
+#             ax1.set_title('XB P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+#             # plot overlap
+#             idx = 0
+#             for i in range(overlapLen):
+#                 if idx == 0:
+#                     line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
+#                                       linewidth=3)
+#                     idx += 1
+#                 else:
+#                     ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+#             ax3.legend(handles=[line1, line2, line3], labels=['XB', 'R&C', 'overlap'])
+#
+#     # set ylabel
+#     ax3.set_ylabel('ICME',fontsize=16)
+#     # set xlabel
+#     ax3.set_xlabel('Time',fontsize=16)
+#     # set xlim
+#     ax3.set_xlim(args['time'][0],args['time'][-1])
+#     # set ylim
+#     ax3.set_ylim([0,1])
+#     # close y ticks
+#     ax3.set_yticklabels([])
+#
+#     # save figure
+#     if not os.path.exists('image/eval/XB'):
+#         os.makedirs('image/eval/XB')
+#     plt.savefig('image/eval/XB/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+#
+# def eventTest_xb(eventIdx,eventTimes,eventSteps,xdata,ydata):
+#     eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+#     # convert to datetime
+#     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+#     eventTime = [datetime.datetime.fromtimestamp(t) for t in eventTime]
+#     eventNp = xdata[0, :eventSteps[0, eventIdx], eventIdx] # in cm-3
+#     eventTp = xdata[1, :eventSteps[0, eventIdx], eventIdx]  # in k
+#     eventVp = xdata[2, :eventSteps[0, eventIdx], eventIdx] # in Km/s
+#     eventMag = xdata[3, :eventSteps[0, eventIdx], eventIdx] # in nT
+#
+#     args = {'time': eventTime, 'Np': eventNp, 'Tp':eventTp, 'Vp': eventVp,'Mag':eventMag, 'y': ydata[:eventSteps[0, eventIdx], eventIdx]}
+#     icme = XB(args)
+#     icmes = checkIcme(icme, args)
+#     ys = checkIcme(args['y'], args)
+#     if icmes is not None:
+#         eval_xb = evaluateIcme(icmes, ys)
+#         if eval_xb['recall'] == 0:
+#             print('Final: No ICME detected!')
+#             return None
+#         plot_xb(args,icmes,ys,eval_xb)
+#     else:
+#         print('Final: No ICME detected!')
 
 ################## Genesis ##################
 from preprocessing import *
@@ -502,108 +502,108 @@ def Genesis(args,cons,Wa=1,Wb=0):
     args['TOCME'] = TOCMEs
     return icme
 
-def plot_genesis(args, icmes, ys=None, eval=None):
-    fig = plt.figure(figsize=(10, 12))
+# def plot_genesis(args, icmes, ys=None, eval=None):
+#     fig = plt.figure(figsize=(10, 12))
+#
+#     ax1 = fig.add_subplot(711)
+#     ax1.plot(args['time'], args['Vp'], label='Vp')
+#     ax1.set_ylabel('Vp Km/s', fontsize=16)
+#     ax1.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax1.set_xticklabels([])
+#     ax2 = fig.add_subplot(712)
+#     ax2.plot(args['time'], args['Tp']*1e-4, label='Tp')
+#     ax2.set_ylabel('Tp 10$^4$K', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(713)
+#     ax2.plot(args['time'], args['TextoTp'], label='TextoTp')
+#     ax2.set_ylabel('T$_{ex}$/T$_p$', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(714)
+#     ax2.plot(args['time'], args['NHetoNp'], label='NhetoNp')
+#     ax2.set_ylabel('N$_{He}$/N$_p$', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(715)
+#     ax2.plot(args['time'], args['Be'], label='BDE')
+#     ax2.set_ylabel('BDE', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     ax2.set_ylim(0, 1)
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax2 = fig.add_subplot(716)
+#     ax2.plot(args['time'], args['TOCME'], label='TOCME')
+#     ax2.set_ylabel('TOCME', fontsize=16)
+#     ax2.set_xlim(args['time'][0], args['time'][-1])
+#     ax2.set_ylim(0, 1)
+#     # close x ticks
+#     ax2.set_xticklabels([])
+#     ax3 = fig.add_subplot(717)
+#     idx = 0
+#     for icme in icmes:
+#         if idx == 0:
+#             line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#             idx += 1
+#         else:
+#             ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+#     if ys is not None:
+#         idx = 0
+#         for y in ys:
+#             if idx == 0:
+#                 line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#                 idx += 1
+#             else:
+#                 ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+#         if eval is None:
+#             ax3.legend(handles=[line1, line2], labels=['Genesis', 'R&C'])
+#         else:
+#             overlapLen = len(eval['overlap'])
+#             ax1.set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+#             # plot overlap
+#             idx = 0
+#             for i in range(overlapLen):
+#                 if idx == 0:
+#                     line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
+#                                       linewidth=3)
+#                     idx += 1
+#                 else:
+#                     ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+#             ax3.legend(handles=[line1, line2, line3], labels=['Genesis', 'R&C', 'overlap'])
+#
+#     # set ylabel
+#     ax3.set_ylabel('ICME',fontsize=16)
+#     # set xlabel
+#     ax3.set_xlabel('Time',fontsize=16)
+#     # set xlim
+#     ax3.set_xlim(args['time'][0],args['time'][-1])
+#     # set ylim
+#     ax3.set_ylim([0,1])
+#     # close y ticks
+#     ax3.set_yticklabels([])
+#
+#     # save figure
+#     if not os.path.exists('image/eval/Genesis'):
+#         os.makedirs('image/eval/Genesis')
+#     plt.savefig('image/eval/Genesis/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
 
-    ax1 = fig.add_subplot(711)
-    ax1.plot(args['time'], args['Vp'], label='Vp')
-    ax1.set_ylabel('Vp Km/s', fontsize=16)
-    ax1.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax1.set_xticklabels([])
-    ax2 = fig.add_subplot(712)
-    ax2.plot(args['time'], args['Tp']*1e-4, label='Tp')
-    ax2.set_ylabel('Tp 10$^4$K', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(713)
-    ax2.plot(args['time'], args['TextoTp'], label='TextoTp')
-    ax2.set_ylabel('T$_{ex}$/T$_p$', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(714)
-    ax2.plot(args['time'], args['NHetoNp'], label='NhetoNp')
-    ax2.set_ylabel('N$_{He}$/N$_p$', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(715)
-    ax2.plot(args['time'], args['Be'], label='BDE')
-    ax2.set_ylabel('BDE', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    ax2.set_ylim(0, 1)
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax2 = fig.add_subplot(716)
-    ax2.plot(args['time'], args['TOCME'], label='TOCME')
-    ax2.set_ylabel('TOCME', fontsize=16)
-    ax2.set_xlim(args['time'][0], args['time'][-1])
-    ax2.set_ylim(0, 1)
-    # close x ticks
-    ax2.set_xticklabels([])
-    ax3 = fig.add_subplot(717)
-    idx = 0
-    for icme in icmes:
-        if idx == 0:
-            line1, = ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-            idx += 1
-        else:
-            ax3.plot([icme[0], icme[1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
-    if ys is not None:
-        idx = 0
-        for y in ys:
-            if idx == 0:
-                line2, = ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-                idx += 1
-            else:
-                ax3.plot([y[0], y[1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
-        if eval is None:
-            ax3.legend(handles=[line1, line2], labels=['Genesis', 'R&C'])
-        else:
-            overlapLen = len(eval['overlap'])
-            ax1.set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
-            # plot overlap
-            idx = 0
-            for i in range(overlapLen):
-                if idx == 0:
-                    line3, = ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-',
-                                      linewidth=3)
-                    idx += 1
-                else:
-                    ax3.plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
-            ax3.legend(handles=[line1, line2, line3], labels=['Genesis', 'R&C', 'overlap'])
-
-    # set ylabel
-    ax3.set_ylabel('ICME',fontsize=16)
-    # set xlabel
-    ax3.set_xlabel('Time',fontsize=16)
-    # set xlim
-    ax3.set_xlim(args['time'][0],args['time'][-1])
-    # set ylim
-    ax3.set_ylim([0,1])
-    # close y ticks
-    ax3.set_yticklabels([])
-
-    # save figure
-    if not os.path.exists('image/eval/Genesis'):
-        os.makedirs('image/eval/Genesis')
-    plt.savefig('image/eval/Genesis/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
-
-def eventTest_genesis(args):
-
-    icme = Genesis(args,Wa=1,Wb=1,ctime1=datetime.timedelta(hours=10),ctime2=datetime.timedelta(hours=10))
-    icmes = checkIcme(icme, args)
-    ys = checkIcme(args['y'], args)
-    if icmes is not None:
-        eval_genesis = evaluateIcme(icmes, ys)
-        if eval_genesis['recall'] == 0:
-            print('Final: No ICME detected!')
-            return None
-        plot_genesis(args,icmes,ys,eval_genesis)
-    else:
-        print('Final: No ICME detected!')
+# def eventTest_genesis(args):
+#
+#     icme = Genesis(args,Wa=1,Wb=1,ctime1=datetime.timedelta(hours=10),ctime2=datetime.timedelta(hours=10))
+#     icmes = checkIcme(icme, args)
+#     ys = checkIcme(args['y'], args)
+#     if icmes is not None:
+#         eval_genesis = evaluateIcme(icmes, ys)
+#         if eval_genesis['recall'] == 0:
+#             print('Final: No ICME detected!')
+#             return None
+#         plot_genesis(args,icmes,ys,eval_genesis)
+#     else:
+#         print('Final: No ICME detected!')
 
 
 if __name__ == '__main__':
@@ -619,5 +619,5 @@ if __name__ == '__main__':
     for i in range(eventSteps.shape[1]):
         print(i)
         args = pre_genesis(i, eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa)
-        eventTest_genesis(args)
-print('SWICS')
+        # eventTest_genesis(args)
+    print('SWICS')

@@ -95,6 +95,7 @@ def avg_genesis(input,t_avg=datetime.timedelta(hours=1),Wa=0,Wb=0):
 
     Vp = running_avg(input['Vp'],input['Vp_time'],input['time'],t1=t_avg/2,t2=t_avg/2)
     Tp = running_avg(input['Tp'],input['Tp_time'],input['time'],t1=t_avg/2,t2=t_avg/2)
+    Np = running_avg(input['Np'],input['Np_time'],input['time'],t1=t_avg/2,t2=t_avg/2)
     TextoTp = running_avg(input['TextoTp'], input['Vp_time'], input['time'], t1=t_avg/2, t2=t_avg/2)
     args = {'V1':V1,
             'V2':V2,
@@ -104,6 +105,7 @@ def avg_genesis(input,t_avg=datetime.timedelta(hours=1),Wa=0,Wb=0):
             'T2':T2,
             'Vp':Vp,
             'Tp':Tp,
+            'Np':Np,
             'TextoTp':TextoTp,
             'time':input['time']}
     if Wa:
