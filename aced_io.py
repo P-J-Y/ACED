@@ -483,37 +483,37 @@ if __name__ == '__main__':
     #     cmelist = listIcmes(args_avg,list_features=['Vp','Tp','Np','NHetoNp','TextoTp'])
     ### SWICS
 
-    # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
-    # eventIdx = 20
-    # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
-    # args = {
-    #     'time':eventTime,
-    #     'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
-    #     'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
-    #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
-    # }
-    # swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
-    # if args is not None:
-        # icmelist = listIcmes(args)
-
-    ### xb
-    xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_xb()
+    xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
     eventIdx = 20
     eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
     eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
     eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
     args = {
         'time':eventTime,
-        'Vp':xdata[2, :eventSteps[0, eventIdx], eventIdx],
-        'Tp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
-        'Np':xdata[0, :eventSteps[0, eventIdx], eventIdx],
-        'Mag':xdata[3, :eventSteps[0, eventIdx], eventIdx],
+        'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
+        'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
         'y':ydata[:eventSteps[0, eventIdx], eventIdx],
     }
-    xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
+    swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
     if args is not None:
-        icmelist = listIcmes(args)
+        icmelist = listIcmes(args,list_features=['Vp','O76'])
+
+    ### xb
+    # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_xb()
+    # eventIdx = 20
+    # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+    # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+    # args = {
+    #     'time':eventTime,
+    #     'Vp':xdata[2, :eventSteps[0, eventIdx], eventIdx],
+    #     'Tp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
+    #     'Np':xdata[0, :eventSteps[0, eventIdx], eventIdx],
+    #     'Mag':xdata[3, :eventSteps[0, eventIdx], eventIdx],
+    #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
+    # }
+    # xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
+    # if args is not None:
+    #     icmelist = listIcmes(args)
     print('genesis')
 
