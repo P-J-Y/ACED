@@ -37,10 +37,24 @@ plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
 
-
+list_features = ['Vp','Tp','Np']
 
 
 ################ functions ################
+
+def listIcmes(icmes,args,list_features=list_features):
+    '''
+    计算每个识别出的icme的参数均值，并输出一个json表格
+    :param icmes:
+    :param args:
+    :param list_features:
+    :return:
+    '''
+    features = np.zeros()
+    for icme in icmes:
+        pass
+
+
 def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
                  plot_features=plot_features_genesis,
                  figpath='image/eval/Genesis/test'):
