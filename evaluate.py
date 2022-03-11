@@ -15,7 +15,7 @@ def checkIcme(icme,args):
     args: dict
     '''
 
-    if sum(icme) == 0:
+    if sum(icme) < 1:
         print('No icme detected!')
         return None
     else:

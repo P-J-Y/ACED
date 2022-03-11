@@ -11,7 +11,9 @@
 import datetime
 import os
 
+import h5py
 import numpy as np
+import tensorflow
 from matplotlib import pyplot as plt
 
 import preprocessing
@@ -36,6 +38,7 @@ plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
 # plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
+plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
 
 list_features = ['Vp','Tp','Np']
 
@@ -268,6 +271,85 @@ def plot_xb(args,icmes,ys=None,eval=None,
         os.makedirs(figpath)
     plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
 
+def plot_nn(args,icmes,ys=None,eval=None,
+                 plot_features=plot_features_nn,
+                 figpath='image/eval/NN/v7/test'):
+    feature2title = {'Vp': 'Vp Km/s',
+                     'Np': 'Np cm$^{-3}$',
+                     'Tp': 'Tp 10$^4$K',
+                     'Mag': 'B nT',
+                     'lambda':'λ °',
+                     'delta':'δ °',
+                     'PA':'PA(#) °(dB)',
+                     'dbrms':'dbrms nT'}
+
+    panelnum = len(plot_features)+1
+    eventnum = len(icmes)
+    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(9,2*panelnum))
+
+    if eval is not None:
+        axes[0].set_title('NN P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+        for i in range(eventnum):
+            if i == 0:
+                line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+            else:
+                axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+        for i in range(len(ys)):
+            if i ==0:
+                line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+            else:
+                axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+        for i in range(len(eval['overlap'])):
+            if i == 0:
+                line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+            else:
+                axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+        axes[-1].legend(handles=[line1, line2, line3], labels=['NN', 'list', 'overlap'])
+
+    else:
+        axes[0].set_title('NN', fontsize=16)
+        for i in range(eventnum):
+            axes[-1].plot([icmes[i][0], icmes[i][1]], [2 / 4, 2 / 4], 'r-', linewidth=3)
+    # set ylabel
+    axes[-1].set_ylabel('ICME', fontsize=16)
+    # set xlabel
+    axes[-1].set_xlabel('Time', fontsize=16)
+    # set xlim
+    axes[-1].set_xlim(args['time'][0], args['time'][-1])
+    # set ylim
+    axes[-1].set_ylim([0, 1])
+    # close y ticks
+    axes[-1].set_yticklabels([])
+
+    for i in range(len(plot_features)):
+        if plot_features[i] == 'PA':
+            anglenum = np.shape(args['PA'])[0]
+            deltaangle = 180 / anglenum
+            angles = np.arange(0, 180, deltaangle)+deltaangle/2
+            X,Y = np.meshgrid(args['time'],angles)
+            axes[i].contourf(X,Y,10*np.log10(args['PA']),cmap='jet')
+            axes[i].set_ylabel('PA(#) °(dB)', fontsize=16)
+            axes[i].set_xticklabels([])
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_ylim([0, 180])
+        elif plot_features[i] == 'Tp':
+            axes[i].plot(args['time'], args['Tp'] * 1e-4, 'b-', linewidth=1)
+            axes[i].set_ylabel(feature2title['Tp'], fontsize=16)
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_xticklabels([])
+        else:
+            axes[i].plot(args['time'], args[plot_features[i]], 'b-', linewidth=1)
+            axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+            axes[i].set_xlim(args['time'][0], args['time'][-1])
+            axes[i].set_xticklabels([])
+
+
+    # save figure
+    if not os.path.exists(figpath):
+        os.makedirs(figpath)
+    plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+
+
 
 ############### SWICS ###############
 def swics_io(args,test=False,ifplot=False,plot_features=plot_features_swics):
@@ -448,6 +530,44 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=Fals
 
     return args_avg
 
+############### Machine Learning ################
+def nn_io(args,model = tensorflow.keras.models.load_model('model/v7/model_v7_1_1.h5'),test=False,ifplot=False,plot_features=plot_features_genesis):
+    ### 检查数据是否完整
+    # if 'Vp' not in args or 'Vp_time' not in args or 'Np' not in args or 'Np_time' not in args or 'Tp' not in args or 'Tp_time' not in args or 'time' not in args:
+    #     raise ValueError('缺少必要的数据，请检查数据是否完整，或字典key的名称是否正确("Vp","Vp_time","Np","Np_time","Tp","Tp_time","time")')
+    ### 给出time每个时间点的icme判定
+    eventstep = len(args['Vp'])
+    xdata = np.hstack((args['Vp'].reshape(eventstep,1),args['Np'].reshape(eventstep,1),
+                       args['Tp'].reshape(eventstep,1),args['delta'].reshape(eventstep,1),
+                       args['lambda'].reshape(eventstep,1),args['Mag'].reshape(eventstep,1),
+                       args['dbrms'].reshape(eventstep,1),args['PA'].T))
+    means = np.nanmean(xdata,axis=0)
+    maxmins = np.nanmax(xdata,axis=0)-np.nanmin(xdata,axis=0)
+    xdata = (xdata-means)/maxmins
+    icme = model.predict(xdata,).reshape(eventstep,)>0.5
+    icmes = evaluate.checkIcme(icme,args)
+    args['icme'] = icme
+    args['icmes'] = icmes
+    if icmes is None:
+        print('Final: No ICME detected!')
+        return None
+    if test:
+        assert 'y' in args, "没有检测到输入权威icme标记y，请关闭测试模式，或检查输入数据"
+        ys = evaluate.checkIcme(args['y'],args)
+        eval_nn = evaluate.evaluateIcme(icmes, ys)
+        if eval_nn['recall'] == 0:
+            print('Final: No ICME detected!')
+            return None
+        elif ifplot:
+            plot_nn(args,icmes,ys=ys,eval=eval_nn,plot_features=plot_features)
+    else:
+        if ifplot:
+            plot_nn(args,icmes,plot_features=plot_features)
+
+
+
+
+
 if __name__ == '__main__':
     ### genesis
     # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
@@ -483,20 +603,20 @@ if __name__ == '__main__':
     #     cmelist = listIcmes(args_avg,list_features=['Vp','Tp','Np','NHetoNp','TextoTp'])
     ### SWICS
 
-    xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
-    eventIdx = 20
-    eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
-    args = {
-        'time':eventTime,
-        'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
-        'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
-        'y':ydata[:eventSteps[0, eventIdx], eventIdx],
-    }
-    swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
-    if args is not None:
-        icmelist = listIcmes(args,list_features=['Vp','O76'])
+    # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
+    # eventIdx = 20
+    # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+    # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+    # args = {
+    #     'time':eventTime,
+    #     'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
+    #     'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
+    #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
+    # }
+    # swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
+    # if args is not None:
+    #     icmelist = listIcmes(args,list_features=['Vp','O76'])
 
     ### xb
     # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_xb()
@@ -515,5 +635,38 @@ if __name__ == '__main__':
     # xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
     # if args is not None:
     #     icmelist = listIcmes(args)
+
+    #### NN
+    file = h5py.File('data/eval/ML/v7/data.mat')  # "eventSteps","eventTimes","xdata","ydata","means","stds"
+    xdata = np.array(file['xdata'])
+    means = np.mean(xdata,axis=0)
+    maxmins = np.max(xdata,axis=0)-np.min(xdata,axis=0)
+    ydata = np.array(file['ydata'])
+    eventTimes = file['eventEpochs']
+    eventSteps = np.array(file['eventSteps'])
+#
+    for eventIdx in range(287,eventSteps.shape[1]):
+        print(eventIdx)
+        eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+        eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        args = {
+            'time': eventTime,
+            'Vp': xdata[0, :eventSteps[0, eventIdx], eventIdx],
+            'Tp': xdata[2, :eventSteps[0, eventIdx], eventIdx],
+            'Np': xdata[1, :eventSteps[0, eventIdx], eventIdx],
+            'delta': xdata[3, :eventSteps[0, eventIdx], eventIdx],
+            'lambda': xdata[4, :eventSteps[0, eventIdx], eventIdx],
+            'Mag': xdata[5, :eventSteps[0, eventIdx], eventIdx],
+            'dbrms': xdata[6, :eventSteps[0, eventIdx], eventIdx],
+            'PA': xdata[7:, :eventSteps[0, eventIdx], eventIdx],
+            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        }
+        if len(eventTime) == 0:
+            print('eventTime is None')
+            continue
+        model = tensorflow.keras.models.load_model('model/v7/model_v7_1_1.h5')
+        nn_io(args, model=model, test=True, ifplot=True, plot_features=plot_features_nn)
+
     print('genesis')
 
