@@ -13,7 +13,7 @@ import os
 
 import h5py
 import numpy as np
-import tensorflow
+
 from matplotlib import pyplot as plt
 
 import preprocessing
@@ -531,7 +531,7 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=Fals
     return args_avg
 
 ############### Machine Learning ################
-def nn_io(args,model = tensorflow.keras.models.load_model('model/v7/model_v7_1_1.h5'),test=False,ifplot=False,plot_features=plot_features_genesis):
+def nn_io(args,model,test=False,ifplot=False,plot_features=plot_features_genesis):
     ### 检查数据是否完整
     # if 'Vp' not in args or 'Vp_time' not in args or 'Np' not in args or 'Np_time' not in args or 'Tp' not in args or 'Tp_time' not in args or 'time' not in args:
     #     raise ValueError('缺少必要的数据，请检查数据是否完整，或字典key的名称是否正确("Vp","Vp_time","Np","Np_time","Tp","Tp_time","time")')
@@ -570,82 +570,86 @@ def nn_io(args,model = tensorflow.keras.models.load_model('model/v7/model_v7_1_1
 
 if __name__ == '__main__':
     ### genesis
-    # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
-    # eventIdx = 42
-    # eventPA = padata[:,:eventSteps_pa[0,eventIdx],eventIdx]
-    # eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]   # Np;Tp;Vp;He4top
-    #
-    # eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx],eventIdx]
-    # eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
-    #
-    # eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx],eventIdx]
-    # eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventsweT = [datetime.datetime.fromtimestamp(t) for t in eventsweT]
-    #
-    #
-    # eventT = event_epoch[:eventSteps[0,eventIdx],eventIdx]
-    # eventT = (eventT - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventT = np.array([datetime.datetime.fromtimestamp(t) for t in eventT])
-    #
-    # args = {
-    #     'Np':eventSWE[0,:],'Np_time':eventsweT,
-    #     'Tp':eventSWE[1,:],'Tp_time':eventsweT,
-    #     'Vp':eventSWE[2,:],'Vp_time':eventsweT,
-    #     'NHetoNp':eventSWE[3,:],'NHetoNp_time':eventsweT,
-    #     'PA':eventPA,'PA_time':eventpaT,
-    #     'time':eventT,
-    #     'y':ydata[:eventSteps[0, eventIdx],eventIdx],
-    # }
-    #
-    # args_avg = genesis_io(args,test=True,Wa=1,Wb=1,ifplot=1,)
-    # if args_avg is not None:
-    #     cmelist = listIcmes(args_avg,list_features=['Vp','Tp','Np','NHetoNp','TextoTp'])
-    ### SWICS
+    def test_genesis(eventIdx = 42):
+        eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
+        eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
+        eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]  # Np;Tp;Vp;He4top
 
-    # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_swics()
-    # eventIdx = 20
-    # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
-    # args = {
-    #     'time':eventTime,
-    #     'Vp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
-    #     'O76':xdata[0, :eventSteps[0, eventIdx], eventIdx],
-    #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
-    # }
-    # swics_io(args,test=True,ifplot=True,plot_features=plot_features_swics)
-    # if args is not None:
-    #     icmelist = listIcmes(args,list_features=['Vp','O76'])
+        eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
+        eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
+
+        eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx], eventIdx]
+        eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventsweT = [datetime.datetime.fromtimestamp(t) for t in eventsweT]
+
+        eventT = event_epoch[:eventSteps[0, eventIdx], eventIdx]
+        eventT = (eventT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventT = np.array([datetime.datetime.fromtimestamp(t) for t in eventT])
+
+        args = {
+            'Np': eventSWE[0, :], 'Np_time': eventsweT,
+            'Tp': eventSWE[1, :], 'Tp_time': eventsweT,
+            'Vp': eventSWE[2, :], 'Vp_time': eventsweT,
+            'NHetoNp': eventSWE[3, :], 'NHetoNp_time': eventsweT,
+            'PA': eventPA, 'PA_time': eventpaT,
+            'time': eventT,
+            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        }
+
+        args_avg = genesis_io(args, test=True, Wa=1, Wb=1, ifplot=1, )
+        if args_avg is not None:
+            cmelist = listIcmes(args_avg, list_features=['Vp', 'Tp', 'Np', 'NHetoNp', 'TextoTp'])
+        print('genesis test done!')
+
+    ### SWICS
+    def test_swics(eventIdx = 42):
+        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics()
+        eventIdx = 20
+        eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+        eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        args = {
+            'time': eventTime,
+            'Vp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
+            'O76': xdata[0, :eventSteps[0, eventIdx], eventIdx],
+            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        }
+        swics_io(args, test=True, ifplot=True, plot_features=plot_features_swics)
+        if args is not None:
+            icmelist = listIcmes(args, list_features=['Vp', 'O76'])
+        print('swics test done!')
 
     ### xb
-    # xdata,ydata,eventTimes,eventSteps = evaluate.loaddata_xb()
-    # eventIdx = 20
-    # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
-    # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-    # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
-    # args = {
-    #     'time':eventTime,
-    #     'Vp':xdata[2, :eventSteps[0, eventIdx], eventIdx],
-    #     'Tp':xdata[1, :eventSteps[0, eventIdx], eventIdx],
-    #     'Np':xdata[0, :eventSteps[0, eventIdx], eventIdx],
-    #     'Mag':xdata[3, :eventSteps[0, eventIdx], eventIdx],
-    #     'y':ydata[:eventSteps[0, eventIdx], eventIdx],
-    # }
-    # xb_io(args,test=True,ifplot=True,plot_features=plot_features_xb)
-    # if args is not None:
-    #     icmelist = listIcmes(args)
+    def test_xb(eventIdx = 42):
+        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb()
+        eventIdx = 20
+        eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+        eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        args = {
+            'time': eventTime,
+            'Vp': xdata[2, :eventSteps[0, eventIdx], eventIdx],
+            'Tp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
+            'Np': xdata[0, :eventSteps[0, eventIdx], eventIdx],
+            'Mag': xdata[3, :eventSteps[0, eventIdx], eventIdx],
+            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        }
+        xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb)
+        if args is not None:
+            icmelist = listIcmes(args)
+        print('xb test done!')
 
     #### NN
-    file = h5py.File('data/eval/ML/v7/data.mat')  # "eventSteps","eventTimes","xdata","ydata","means","stds"
-    xdata = np.array(file['xdata'])
-    means = np.mean(xdata,axis=0)
-    maxmins = np.max(xdata,axis=0)-np.min(xdata,axis=0)
-    ydata = np.array(file['ydata'])
-    eventTimes = file['eventEpochs']
-    eventSteps = np.array(file['eventSteps'])
-#
-    for eventIdx in range(287,eventSteps.shape[1]):
+    def test_nn(eventIdx = 42):
+        import tensorflow
+        file = h5py.File('data/eval/ML/v7/data.mat')  # "eventSteps","eventTimes","xdata","ydata","means","stds"
+        xdata = np.array(file['xdata'])
+        means = np.mean(xdata, axis=0)
+        maxmins = np.max(xdata, axis=0) - np.min(xdata, axis=0)
+        ydata = np.array(file['ydata'])
+        eventTimes = file['eventEpochs']
+        eventSteps = np.array(file['eventSteps'])
         print(eventIdx)
         eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
@@ -664,9 +668,13 @@ if __name__ == '__main__':
         }
         if len(eventTime) == 0:
             print('eventTime is None')
-            continue
+            return None
         model = tensorflow.keras.models.load_model('model/v7/model_v7_1_1.h5')
-        nn_io(args, model=model, test=True, ifplot=True, plot_features=plot_features_nn)
+        nn_io(args,model, test=True, ifplot=True, plot_features=plot_features_nn)
+        print('nn test done!')
 
-    print('genesis')
+
+    test_genesis()
+
+
 
