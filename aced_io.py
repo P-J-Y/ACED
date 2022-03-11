@@ -2,8 +2,10 @@
 
 # 彭镜宇(Peng jingyu)
 # 2022-03-09
-# 1 genesis在Wb=0的时候，输出TOcme可能还要调试一下
+# 1 genesis在Wb=0的时候，输出TOcme可能还要调试一下；包括拟合Tex(Vp)
 # 2 应该确保t_avg和输出数据的时间点time一致
+# 3 genesis Vp_time和Tp_time不一致的时候还没考虑
+# 4 NN 模型还没有封装完成
 
 
 
@@ -616,7 +618,7 @@ if __name__ == '__main__':
             'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         }
         swics_io(args, test=True, ifplot=True, plot_features=plot_features_swics)
-        if args is not None:
+        if args['icmes'] is not None:
             icmelist = listIcmes(args, list_features=['Vp', 'O76'])
         print('swics test done!')
 
@@ -636,7 +638,7 @@ if __name__ == '__main__':
             'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         }
         xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb)
-        if args is not None:
+        if args['icmes'] is not None:
             icmelist = listIcmes(args)
         print('xb test done!')
 
@@ -674,7 +676,7 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_genesis()
+    test_swics()
 
 
 
