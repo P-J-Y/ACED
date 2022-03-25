@@ -206,8 +206,8 @@ def SWICS(args):
 def K2eV(K):
     return K * 8.6173324e-5
 
-def loaddata_xb():
-    fileName = 'data/eval/XB/data.mat'
+def loaddata_xb(fileName = 'data/eval/XB/data.mat'):
+
     file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
     xdata = file['xdata']
     ydata = file['ydata']

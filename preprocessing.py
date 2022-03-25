@@ -17,20 +17,21 @@ import h5py
 import numpy as np
 
 
-def load_original_data_genesis():
-    fileName = 'data/eval/Genesis/origin_data.mat'
+def load_original_data_genesis(fileName = 'data/eval/Genesis/origin_data.mat'):
+
     file = h5py.File(fileName)  # "eventSteps","eventSteps_swe","eventSteps_pa","swedata","padata","ydata",eventEpochs,eventEpochs_swe,eventEpochs_pa
     eventSteps = file['eventSteps'][:]
     eventSteps_swe = file['eventSteps_swe'][:]
-    eventSteps_pa = file['eventSteps_pa'][:]
+    # eventSteps_pa = file['eventSteps_pa'][:]
     swedata = file['swedata'][:]
-    padata = file['padata'][:]
+    # padata = file['padata'][:]
     ydata = file['ydata'][:]
     eventEpochs = file['eventEpochs'][:]
     eventEpochs_swe = file['eventEpochs_swe'][:]
-    eventEpochs_pa = file['eventEpochs_pa'][:]
+    # eventEpochs_pa = file['eventEpochs_pa'][:]
     file.close()
-    return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
+    # return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
+    return eventSteps, eventSteps_swe, swedata, ydata, eventEpochs, eventEpochs_swe
 
 def Tex(Vp,cons):
     '''

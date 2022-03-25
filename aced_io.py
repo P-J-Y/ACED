@@ -36,8 +36,8 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
-# plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA']
+# plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+plot_features_genesis = ['Vp','Tp','TextoTp']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
 plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
@@ -572,14 +572,15 @@ def nn_io(args,model,test=False,ifplot=False,plot_features=plot_features_genesis
 
 if __name__ == '__main__':
     ### genesis
-    def test_genesis(eventIdx = 42):
-        eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis()
-        eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
+    def test_genesis(eventIdx = 42, fileName = 'data/eval/Genesis/origin_data.mat'):
+        # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName)
+        eventSteps, eventSteps_swe, swedata, ydata, event_epoch, event_epoch_swe = preprocessing.load_original_data_genesis(fileName=fileName)
+        # eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
         eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]  # Np;Tp;Vp;He4top
 
-        eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
-        eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
+        # eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
+        # eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
 
         eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx], eventIdx]
         eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
@@ -593,21 +594,20 @@ if __name__ == '__main__':
             'Np': eventSWE[0, :], 'Np_time': eventsweT,
             'Tp': eventSWE[1, :], 'Tp_time': eventsweT,
             'Vp': eventSWE[2, :], 'Vp_time': eventsweT,
-            'NHetoNp': eventSWE[3, :], 'NHetoNp_time': eventsweT,
-            'PA': eventPA, 'PA_time': eventpaT,
+            # 'NHetoNp': eventSWE[3, :], 'NHetoNp_time': eventsweT,
+            # 'PA': eventPA, 'PA_time': eventpaT,
             'time': eventT,
             'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         }
 
         args_avg = genesis_io(args, test=True, Wa=1, Wb=1, ifplot=1, )
         if args_avg is not None:
-            cmelist = listIcmes(args_avg, list_features=['Vp', 'Tp', 'Np', 'NHetoNp', 'TextoTp'])
+            cmelist = listIcmes(args_avg, list_features=['Vp', 'Tp', 'Np', 'TextoTp'])
         print('genesis test done!')
 
     ### SWICS
     def test_swics(eventIdx = 42):
         xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics()
-        eventIdx = 20
         eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
         eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
@@ -623,9 +623,8 @@ if __name__ == '__main__':
         print('swics test done!')
 
     ### xb
-    def test_xb(eventIdx = 42):
-        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb()
-        eventIdx = 20
+    def test_xb(eventIdx = 42,fileName = 'data/eval/XB/data.mat'):
+        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb(fileName=fileName)
         eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
         eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
@@ -676,7 +675,7 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_swics()
+    test_genesis(eventIdx=2,fileName='data/eval/Genesis/dscovr_origin_data.mat')
 
 
 
