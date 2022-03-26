@@ -91,8 +91,8 @@ def evaluateIcme(icmes,ys):
 
 
 
-def loaddata_swics():
-    fileName = 'data/eval/SWICS/data.mat'
+def loaddata_swics(fileName = 'data/eval/SWICS/data.mat'):
+
     file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
     xdata = file['xdata']
     ydata = file['ydata']
@@ -615,7 +615,7 @@ if __name__ == '__main__':
     # for i in range(eventSteps.shape[1]):
     #     eventTest_xb(i,eventTimes,eventSteps,xdata,ydata)
 
-    eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = load_original_data_genesis()
+    eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = load_original_data_genesis()
     for i in range(eventSteps.shape[1]):
         print(i)
         args = pre_genesis(i, eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa)

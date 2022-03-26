@@ -22,16 +22,32 @@ def load_original_data_genesis(fileName = 'data/eval/Genesis/origin_data.mat'):
     file = h5py.File(fileName)  # "eventSteps","eventSteps_swe","eventSteps_pa","swedata","padata","ydata",eventEpochs,eventEpochs_swe,eventEpochs_pa
     eventSteps = file['eventSteps'][:]
     eventSteps_swe = file['eventSteps_swe'][:]
-    # eventSteps_pa = file['eventSteps_pa'][:]
+    if 'eventSteps_pa' in file.keys():
+        eventSteps_pa = file['eventSteps_pa'][:]
+    else:
+        eventSteps_pa = None
     swedata = file['swedata'][:]
-    # padata = file['padata'][:]
-    ydata = file['ydata'][:]
+    if "padata" in file.keys():
+        padata = file['padata'][:]
+    else:
+        padata = None
+    if 'ydata' in file.keys():
+        ydata = file['ydata'][:]
+    else:
+        ydata = None
     eventEpochs = file['eventEpochs'][:]
     eventEpochs_swe = file['eventEpochs_swe'][:]
-    # eventEpochs_pa = file['eventEpochs_pa'][:]
+    if 'eventEpochs_pa' in file.keys():
+        eventEpochs_pa = file['eventEpochs_pa'][:]
+    else:
+        eventEpochs_pa = None
+    if 'magdata' in file.keys():
+        magdata = file['magdata'][:]
+    else:
+        magdata = None
     file.close()
-    # return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
-    return eventSteps, eventSteps_swe, swedata, ydata, eventEpochs, eventEpochs_swe
+    return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
+    # return eventSteps, eventSteps_swe, swedata, ydata, eventEpochs, eventEpochs_swe
 
 def Tex(Vp,cons):
     '''
@@ -177,7 +193,7 @@ def pre_genesis(eventIdx,eventSteps, eventSteps_swe, eventSteps_pa, swedata, pad
 
 
 if __name__ == '__main__':
-    eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = load_original_data_genesis()
+    eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = load_original_data_genesis()
     eventIdx = 1
     eventPA = padata[:,:eventSteps_pa[0,eventIdx],eventIdx]
     eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]   # Np;Tp;Vp;He4top

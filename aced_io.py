@@ -25,29 +25,34 @@ import evaluate
 
 ################ constants ################
 constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
-                     'CB1':23,'CB2':1.15,'CB3':16.67,'CB4':1.0,
-                     'CT1':23,'CT2':1.15,'CT3':16.67,'CT4':1.0,
+                     'CB1':2,'CB2':0.1,'CB3':2.5,'CB4':0.1,
+                     'CT1':1,'CT2':0,'CT3':1.5,'CT4':0,
                      'ctime1':datetime.timedelta(hours=5),'ctime2':datetime.timedelta(hours=25), # for tocme
                      'BDE_threshold':2.0,
                      'Vcut':500.0,'C1':2.6e4,'C2':316.2,'C3':0.961,'C4':-1.42e5,'C5':510.0,'C6':0, # for Tex
                      't_avg':datetime.timedelta(hours=1), # for averaging
                      'Aout':0.06,'Tout':1.5,'Bout':0.4,
+                     # Tout=1.5 可能有点太小了，容易把ICME过多的识别
                      'tstay':datetime.timedelta(hours=18), 'tlag':datetime.timedelta(hours=6), 'tocme_threshold':0.4, # for genesis
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-# plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
-plot_features_genesis = ['Vp','Tp','TextoTp']
+plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+# plot_features_genesis = ['Vp','Tp','TextoTp']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
 plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
 
-list_features = ['Vp','Tp','Np']
+list_features = ['Vp','Tp','Np','Mag','O76','Be','TextoTp','NHetoNp']
 
 
 ################ functions ################
 
-def listIcmes(args,list_features=list_features):
+def listIcmes(args,
+              list_features=list_features,
+              savejson=True,
+              savepath='icmelist/test',
+              filename='icmetest.json'):
     '''
     计算每个识别出的icme的参数均值，并输出一个json表格
     :param icmes:
@@ -63,9 +68,18 @@ def listIcmes(args,list_features=list_features):
         }
         timepoints = (args['time']>icmes[i][0]) * (args['time']<icmes[i][1])
         for feature in list_features:
-            features[feature] = np.nanmean(args[feature][timepoints])
+            if feature not in args:
+                features[feature] = None
+            else:
+                features[feature] = np.nanmean(args[feature][timepoints])
 
         icmelist.append(features)
+    if savejson:
+        if not os.path.exists(savepath):
+            os.makedirs(savepath)
+        with open(savepath+'/'+filename,'w') as f:
+            f.write(str(icmelist))
+
     return icmelist
 
 
@@ -86,7 +100,10 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(7,2*panelnum))
+    fig,axes = plt.subplots(nrows=panelnum,
+                            ncols=1,
+                            figsize=(9,1.5*panelnum),
+                            gridspec_kw = {'wspace':0, 'hspace':0})
 
     if eval is not None:
         axes[0].set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
@@ -123,6 +140,8 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
     axes[-1].set_yticklabels([])
 
     for i in range(len(plot_features)):
+        if plot_features[i] not in args and plot_features[i] not in args_avg:
+            continue
         if plot_features[i] in plot_in_args:
             axes[i].plot(args[feature2time[plot_features[i]]], args[plot_features[i]], 'b-', linewidth=1)
             axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
@@ -166,7 +185,10 @@ def plot_swics(args,icmes,ys=None,eval=None,
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(10,4*panelnum))
+    fig,axes = plt.subplots(nrows=panelnum,
+                            ncols=1,
+                            figsize=(10,3*panelnum),
+                            gridspec_kw = {'wspace':0, 'hspace':0})
 
     if eval is not None:
         axes[0].set_title('SWICS P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
@@ -220,7 +242,10 @@ def plot_xb(args,icmes,ys=None,eval=None,
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(10,4*panelnum))
+    fig,axes = plt.subplots(nrows=panelnum,
+                            ncols=1,
+                            figsize=(10,1.5*panelnum),
+                            gridspec_kw = {'wspace':0, 'hspace':0})
 
     if eval is not None:
         axes[0].set_title('XB P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
@@ -287,7 +312,10 @@ def plot_nn(args,icmes,ys=None,eval=None,
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,ncols=1,figsize=(9,2*panelnum))
+    fig,axes = plt.subplots(nrows=panelnum,
+                            ncols=1,
+                            figsize=(9,2*panelnum),
+                            gridspec_kw = {'wspace':0, 'hspace':0})
 
     if eval is not None:
         axes[0].set_title('NN P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
@@ -449,7 +477,14 @@ def xb_io(args,test=False,ifplot=False,plot_features=plot_features_xb):
 
 
 ################ Genesis ################
-def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=False,plot_features=plot_features_genesis):
+def genesis_io(args,
+               test=False,
+               constants=constants_genesis,
+               Wa=1,
+               Wb=1,
+               ifplot=False,
+               plot_features=plot_features_genesis,
+               figpath='image/eval/Genesis/test'):
     '''
     ——必须的数据7个：
     Vp: 质子速度 Km/s, shape=#timepoints
@@ -496,7 +531,6 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=Fals
         print('没有检测到"PA"数据，Wb设置为0. 如果输入了此数据，请检查字典key名称是否正确')
     else:
         assert 'PA_time' in args, '检测到"PA"数据, 但没有"PA_time"数据，请检查是否输入该时间数据，或检查字典key名称是否正确'
-
     ### 计算 Tex （根据Vp估计的非ICME太阳风质子温度，对于ICME，质子温度应该远远低于Tex）
     Tp_ex = preprocessing.Tex(args['Vp'],constants) # in K
     assert args['Tp_time'] == args['Vp_time'], "Tp_time和Vp_time应该是相同的，如果这两个数据时间不同，还应该再插值到Vp_time"
@@ -525,10 +559,10 @@ def genesis_io(args,test=False,constants=constants_genesis,Wa=1,Wb=1,ifplot=Fals
             print('Final: No ICME detected!')
             return None
         elif ifplot:
-            plot_genesis(args,args_avg,icmes,ys=ys,eval=eval_genesis,plot_features=plot_features)
+            plot_genesis(args,args_avg,icmes,ys=ys,eval=eval_genesis,plot_features=plot_features,figpath=figpath)
     else:
         if ifplot:
-            plot_genesis(args,args_avg,icmes,plot_features=plot_features)
+            plot_genesis(args,args_avg,icmes,plot_features=plot_features,figpath=figpath)
 
     return args_avg
 
@@ -572,16 +606,14 @@ def nn_io(args,model,test=False,ifplot=False,plot_features=plot_features_genesis
 
 if __name__ == '__main__':
     ### genesis
-    def test_genesis(eventIdx = 42, fileName = 'data/eval/Genesis/origin_data.mat'):
-        # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName)
-        eventSteps, eventSteps_swe, swedata, ydata, event_epoch, event_epoch_swe = preprocessing.load_original_data_genesis(fileName=fileName)
-        # eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
+    def test_genesis(eventIdx = 42,
+                     fileName = 'data/eval/Genesis/origin_data.mat',
+                     list_features = list_features,
+                     plot_features = plot_features_genesis):
+        eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName)
+        # eventSteps, eventSteps_swe, swedata, ydata, event_epoch, event_epoch_swe = preprocessing.load_original_data_genesis(fileName=fileName)
+
         eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]  # Np;Tp;Vp;He4top
-
-        # eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
-        # eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
-        # eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
-
         eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx], eventIdx]
         eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
         eventsweT = [datetime.datetime.fromtimestamp(t) for t in eventsweT]
@@ -594,20 +626,32 @@ if __name__ == '__main__':
             'Np': eventSWE[0, :], 'Np_time': eventsweT,
             'Tp': eventSWE[1, :], 'Tp_time': eventsweT,
             'Vp': eventSWE[2, :], 'Vp_time': eventsweT,
-            # 'NHetoNp': eventSWE[3, :], 'NHetoNp_time': eventsweT,
-            # 'PA': eventPA, 'PA_time': eventpaT,
             'time': eventT,
-            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         }
+        if ydata is not None:
+            args['y'] = ydata[:eventSteps[0, eventIdx], eventIdx]
+        if padata is not None:
+            eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
+            eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
+            eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
+            eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
+            args['PA'] = eventPA
+            args['PA_time'] = eventpaT
+        if eventSWE.shape[0] == 4:
+            args['NHetoNp'] = eventSWE[3, :]
+            args['NHetoNp_time'] = eventsweT
 
-        args_avg = genesis_io(args, test=True, Wa=1, Wb=1, ifplot=1, )
+        args_avg = genesis_io(args, test=True, Wa=1, Wb=1, ifplot=1, plot_features=plot_features)
         if args_avg is not None:
-            cmelist = listIcmes(args_avg, list_features=['Vp', 'Tp', 'Np', 'TextoTp'])
+            cmelist = listIcmes(args_avg, list_features=list_features,savejson=True,filename='genesis_icme.json')
         print('genesis test done!')
 
     ### SWICS
-    def test_swics(eventIdx = 42):
-        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics()
+    def test_swics(eventIdx = 42,
+                   fileName = 'data/eval/SWICS/data.mat',
+                   list_features = list_features,
+                   plot_features=plot_features_swics):
+        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics(fileName=fileName)
         eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
         eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
@@ -617,13 +661,16 @@ if __name__ == '__main__':
             'O76': xdata[0, :eventSteps[0, eventIdx], eventIdx],
             'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         }
-        swics_io(args, test=True, ifplot=True, plot_features=plot_features_swics)
+        swics_io(args, test=True, ifplot=True, plot_features=plot_features)
         if args['icmes'] is not None:
-            icmelist = listIcmes(args, list_features=['Vp', 'O76'])
+            icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='swics_icmes.json')
         print('swics test done!')
 
     ### xb
-    def test_xb(eventIdx = 42,fileName = 'data/eval/XB/data.mat'):
+    def test_xb(eventIdx = 42,
+                fileName = 'data/eval/XB/data.mat',
+                list_features = list_features,
+                ):
         xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb(fileName=fileName)
         eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
@@ -638,7 +685,7 @@ if __name__ == '__main__':
         }
         xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb)
         if args['icmes'] is not None:
-            icmelist = listIcmes(args)
+            icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='xb_icmes.json')
         print('xb test done!')
 
     #### NN
@@ -675,7 +722,8 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_genesis(eventIdx=2,fileName='data/eval/Genesis/dscovr_origin_data.mat')
-
+    test_genesis(eventIdx=11,fileName='data/eval/Genesis/dscovr_origin_data.mat',list_features=list_features,plot_features=['Vp','Tp','TextoTp','TOCME'])
+    # test_xb(eventIdx=11,fileName='data/eval/XB/data_dscovr.mat',list_features=list_features)
+    # test_swics(eventIdx=200,fileName='data/eval/SWICS/data.mat',list_features=list_features,plot_features=plot_features_swics)
 
 
