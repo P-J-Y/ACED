@@ -233,7 +233,7 @@ def loaddata_xb(fileName = 'data/eval/XB/datatot.mat'):
 
 
 def XB(args):
-    icme = 0.841*args['Mag']*(args['Np']**-0.315)*(K2eV(args['Tp'])**-0.0222)*(args['Vp']**-0.171) > 1 # Vp in km/s, np in cm-3, B in nT, Tp in K(通过K2eV转换成eV)
+    icme = 0.841*args['Mag']*(args['Np']**-0.315)*(K2eV(args['Tp'])**-0.0222)*(args['Vp']**-0.171) > 1.8 # Vp in km/s, np in cm-3, B in nT, Tp in K(通过K2eV转换成eV)
     return icme
 
 

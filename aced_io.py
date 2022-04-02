@@ -752,6 +752,6 @@ if __name__ == '__main__':
 
     # test_genesis(eventIdx=11,fileName='data/eval/Genesis/dscovr_origin_data.mat',list_features=list_features,plot_features=['Vp','Tp','TextoTp','TOCME'])
     test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
-    # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot2.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
+    # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot1.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
 
 
