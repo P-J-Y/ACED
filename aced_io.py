@@ -44,6 +44,9 @@ plot_features_xb = ['Vp','Np','Tp','Mag']
 plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
 
 list_features = ['Vp','Tp','Np','Mag','O76','Be','TextoTp','NHetoNp']
+figpath_swics = 'image/eval/SWICS/test/tot'
+figpath_xb = 'image/eval/xb/test/tot'
+figpath_genesis = 'image/eval/genesis/test/tot'
 
 
 ################ functions ################
@@ -85,7 +88,7 @@ def listIcmes(args,
 
 def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
                  plot_features=plot_features_genesis,
-                 figpath='image/eval/Genesis/test'):
+                 figpath=figpath_genesis,) :
 
     plot_in_args = ['Vp','TextoTp','NHetoNp',]
     plot_in_args_avg = ['TOCME','Be']
@@ -180,7 +183,7 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
 
 def plot_swics(args,icmes,ys=None,eval=None,
                  plot_features=plot_features_swics,
-                 figpath='image/eval/SWICS/test'):
+                 figpath=figpath_swics):
     feature2title = {'Vp':'Vp Km/s','O76':'O7/O6'}
 
     panelnum = len(plot_features)+1
@@ -237,7 +240,7 @@ def plot_swics(args,icmes,ys=None,eval=None,
 
 def plot_xb(args,icmes,ys=None,eval=None,
                  plot_features=plot_features_xb,
-                 figpath='image/eval/XB/test'):
+                 figpath=figpath_xb):
     feature2title = {'Vp':'Vp Km/s','Np':'Np cm$^{-3}$','Tp':'Tp 10$^4$K','Mag':'B nT'}
 
     panelnum = len(plot_features)+1
@@ -382,10 +385,10 @@ def plot_nn(args,icmes,ys=None,eval=None,
 
 
 ############### SWICS ###############
-def swics_io(args,test=False,ifplot=False,plot_features=plot_features_swics):
+def swics_io(args,test=False,ifplot=False,plot_features=plot_features_swics,figpath=figpath_swics):
     '''
 
-    :param args: 应该包含如下数据，质子速度与O76的时间分辨率应该是一样的（建议1hr或2hr），即应该在预处理时插值到所需的时间点
+    :param args: 应该包含如下数据，质子速度与O76的时间分辨率应该是一样的（建议1hr或2hr），即应该在预处理时插值到所需的时间点, 这些一维的数据格式是np array，shape=(n,)注意不要把数据搞成向量输入了
     'Vp': km/s
     'O76': O7/O6价态粒子数之比
     'time': 输出数据的时间点
@@ -417,17 +420,17 @@ def swics_io(args,test=False,ifplot=False,plot_features=plot_features_swics):
             print('Final: No ICME detected!')
             return None
         elif ifplot:
-            plot_swics(args,icmes,ys=ys,eval=eval_swics,plot_features=plot_features)
+            plot_swics(args,icmes,ys=ys,eval=eval_swics,plot_features=plot_features,figpath=figpath)
     else:
         if ifplot:
-            plot_swics(args,icmes,plot_features=plot_features)
+            plot_swics(args,icmes,plot_features=plot_features,figpath=figpath)
 
 
 ################ XB ################
-def xb_io(args,test=False,ifplot=False,plot_features=plot_features_xb):
+def xb_io(args,test=False,ifplot=False,plot_features=plot_features_xb,figpath=figpath_xb):
     '''
 
-    :param args: 应该包含如下数据，时间分辨率应该是一样的（建议1hr或2hr），即应该在预处理时插值到所需的时间点
+    :param args: 应该包含如下数据，时间分辨率应该是一样的（建议1hr或2hr），即应该在预处理时插值到所需的时间点, 这些一维的数据格式是np array，shape=(n,)注意不要把数据搞成向量输入了
     'Vp': km/s
     'Np': cm-3
     'Tp': K
@@ -461,10 +464,10 @@ def xb_io(args,test=False,ifplot=False,plot_features=plot_features_xb):
             print('Final: No ICME detected!')
             return None
         elif ifplot:
-            plot_xb(args,icmes,ys=ys,eval=eval_xb,plot_features=plot_features)
+            plot_xb(args,icmes,ys=ys,eval=eval_xb,plot_features=plot_features,figpath=figpath)
     else:
         if ifplot:
-            plot_xb(args,icmes,plot_features=plot_features)
+            plot_xb(args,icmes,plot_features=plot_features,figpath=figpath)
 
 
 
@@ -484,7 +487,7 @@ def genesis_io(args,
                Wb=1,
                ifplot=False,
                plot_features=plot_features_genesis,
-               figpath='image/eval/Genesis/test'):
+               figpath=figpath_genesis):
     '''
     ——必须的数据7个：
     Vp: 质子速度 Km/s, shape=#timepoints
@@ -609,7 +612,8 @@ if __name__ == '__main__':
     def test_genesis(eventIdx = 42,
                      fileName = 'data/eval/Genesis/origin_data.mat',
                      list_features = list_features,
-                     plot_features = plot_features_genesis):
+                     plot_features = plot_features_genesis,
+                     figpath=figpath_genesis):
         eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName)
         # eventSteps, eventSteps_swe, swedata, ydata, event_epoch, event_epoch_swe = preprocessing.load_original_data_genesis(fileName=fileName)
 
@@ -650,18 +654,31 @@ if __name__ == '__main__':
     def test_swics(eventIdx = 42,
                    fileName = 'data/eval/SWICS/data.mat',
                    list_features = list_features,
-                   plot_features=plot_features_swics):
-        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics(fileName=fileName)
-        eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+                   plot_features=plot_features_swics,
+                   figpath=figpath_swics):
+        # xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_swics(fileName=fileName) # for event
+
+        # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+        # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        # args = {
+        #     'time': eventTime,
+        #     'Vp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
+        #     'O76': xdata[0, :eventSteps[0, eventIdx], eventIdx],
+        #     'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        # }
+
+        xdata, ydata, eventTime = evaluate.loaddata_swics(fileName=fileName)  # for tot
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:,0]])
         args = {
             'time': eventTime,
-            'Vp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
-            'O76': xdata[0, :eventSteps[0, eventIdx], eventIdx],
-            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+            'Vp': xdata[:, 1],
+            'O76': xdata[:, 0],
+            'y': ydata[:,0],
         }
-        swics_io(args, test=True, ifplot=True, plot_features=plot_features)
+
+        swics_io(args, test=True, ifplot=True, plot_features=plot_features,figpath=figpath)
         if args['icmes'] is not None:
             icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='swics_icmes.json')
         print('swics test done!')
@@ -670,20 +687,31 @@ if __name__ == '__main__':
     def test_xb(eventIdx = 42,
                 fileName = 'data/eval/XB/data.mat',
                 list_features = list_features,
-                ):
-        xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb(fileName=fileName)
-        eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+                figpath=figpath_xb):
+        # xdata, ydata, eventTimes, eventSteps = evaluate.loaddata_xb(fileName=fileName) # for event
+        # eventTime = eventTimes[:eventSteps[0, eventIdx], eventIdx]
+        # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        # args = {
+        #     'time': eventTime,
+        #     'Vp': xdata[2, :eventSteps[0, eventIdx], eventIdx],
+        #     'Tp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
+        #     'Np': xdata[0, :eventSteps[0, eventIdx], eventIdx],
+        #     'Mag': xdata[3, :eventSteps[0, eventIdx], eventIdx],
+        #     'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+        # }
+        xdata, ydata, eventTime = evaluate.loaddata_xb(fileName=fileName)  # for tot
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime])
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:,0]])
         args = {
             'time': eventTime,
-            'Vp': xdata[2, :eventSteps[0, eventIdx], eventIdx],
-            'Tp': xdata[1, :eventSteps[0, eventIdx], eventIdx],
-            'Np': xdata[0, :eventSteps[0, eventIdx], eventIdx],
-            'Mag': xdata[3, :eventSteps[0, eventIdx], eventIdx],
-            'y': ydata[:eventSteps[0, eventIdx], eventIdx],
+            'Vp': xdata[:, 2],
+            'Tp': xdata[:, 1],
+            'Np': xdata[:, 0],
+            'Mag': xdata[:, 3],
+            'y': ydata[:,0],
         }
-        xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb)
+        xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb,figpath=figpath)
         if args['icmes'] is not None:
             icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='xb_icmes.json')
         print('xb test done!')
@@ -722,8 +750,8 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_genesis(eventIdx=11,fileName='data/eval/Genesis/dscovr_origin_data.mat',list_features=list_features,plot_features=['Vp','Tp','TextoTp','TOCME'])
-    # test_xb(eventIdx=11,fileName='data/eval/XB/data_dscovr.mat',list_features=list_features)
-    # test_swics(eventIdx=200,fileName='data/eval/SWICS/data.mat',list_features=list_features,plot_features=plot_features_swics)
+    # test_genesis(eventIdx=11,fileName='data/eval/Genesis/dscovr_origin_data.mat',list_features=list_features,plot_features=['Vp','Tp','TextoTp','TOCME'])
+    test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
+    # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot2.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
 
 

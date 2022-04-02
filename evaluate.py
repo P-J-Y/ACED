@@ -77,7 +77,7 @@ def evaluateIcme(icmes,ys):
         precision = 0
         recall = 0
         return {'icme_detected':icme_detected, 'icme_list':icme_list, 'overlap':overlap, 'precision':precision, 'recall':recall}
-    elif precision[0] < datetime.timedelta(seconds=1): # if overlap is too small, ignore it
+    elif np.sum(precision) < datetime.timedelta(seconds=1): # if overlap is too small, ignore it
         precision = 0
         recall = 0
         return {'icme_detected':icme_detected, 'icme_list':icme_list, 'overlap':overlap, 'precision':precision, 'recall':recall}
@@ -92,13 +92,21 @@ def evaluateIcme(icmes,ys):
 
 
 def loaddata_swics(fileName = 'data/eval/SWICS/data.mat'):
+    # event
+    # file = h5py.File(fileName)  # "datatot","ytot","timetot",'epochtot'
+    # xdata = file['xdata']
+    # ydata = file['ydata']
+    # eventTimes = file['eventEpochs']
+    # eventSteps = file['eventSteps']
+    # return xdata,ydata,eventTimes,eventSteps
 
-    file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
-    xdata = file['xdata']
-    ydata = file['ydata']
-    eventTimes = file['eventEpochs']
-    eventSteps = file['eventSteps']
-    return xdata,ydata,eventTimes,eventSteps
+    # tot
+    file = h5py.File(fileName)  # "datatot","ytot","timetot",'epochtot'
+    xdata = file['datatot'][:]
+    ydata = file['ytot'][:]
+    eventTimes = file['epochtot'][:]
+    return xdata,ydata,eventTimes
+
 
 
 def SWICS(args):
@@ -206,14 +214,22 @@ def SWICS(args):
 def K2eV(K):
     return K * 8.6173324e-5
 
-def loaddata_xb(fileName = 'data/eval/XB/data.mat'):
+def loaddata_xb(fileName = 'data/eval/XB/datatot.mat'):
 
-    file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
-    xdata = file['xdata']
-    ydata = file['ydata']
-    eventTimes = file['eventEpochs']
-    eventSteps = file['eventSteps']
-    return xdata,ydata,eventTimes,eventSteps
+    # events
+    # file = h5py.File(fileName)  # "eventSteps","eventEpochs","xdata","ydata"
+    # xdata = file['xdata']
+    # ydata = file['ydata']
+    # eventTimes = file['eventEpochs']
+    # eventSteps = file['eventSteps']
+    # return xdata,ydata,eventTimes,eventSteps
+
+    # tot
+    file = h5py.File(fileName)  # "datatot","ytot","timetot",'epochtot'
+    xdata = file['datatot'][:]
+    ydata = file['ytot'][:]
+    eventTimes = file['epochtot'][:]
+    return xdata,ydata,eventTimes
 
 
 def XB(args):
