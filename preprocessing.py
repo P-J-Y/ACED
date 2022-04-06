@@ -19,35 +19,58 @@ import numpy as np
 
 def load_original_data_genesis(fileName = 'data/eval/Genesis/origin_data.mat'):
 
+    # file = h5py.File(fileName)  # "eventSteps","eventSteps_swe","eventSteps_pa","swedata","padata","ydata",eventEpochs,eventEpochs_swe,eventEpochs_pa
+    # eventSteps = file['eventSteps'][:]
+    # eventSteps_swe = file['eventSteps_swe'][:]
+    # if 'eventSteps_pa' in file.keys():
+    #     eventSteps_pa = file['eventSteps_pa'][:]
+    # else:
+    #     eventSteps_pa = None
+    # swedata = file['swedata'][:]
+    # if "padata" in file.keys():
+    #     padata = file['padata'][:]
+    # else:
+    #     padata = None
+    # if 'ydata' in file.keys():
+    #     ydata = file['ydata'][:]
+    # else:
+    #     ydata = None
+    # eventEpochs = file['eventEpochs'][:]
+    # eventEpochs_swe = file['eventEpochs_swe'][:]
+    # if 'eventEpochs_pa' in file.keys():
+    #     eventEpochs_pa = file['eventEpochs_pa'][:]
+    # else:
+    #     eventEpochs_pa = None
+    # if 'magdata' in file.keys():
+    #     magdata = file['magdata'][:]
+    # else:
+    #     magdata = None
+    # file.close()
+    # return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
+
+    # tot
     file = h5py.File(fileName)  # "eventSteps","eventSteps_swe","eventSteps_pa","swedata","padata","ydata",eventEpochs,eventEpochs_swe,eventEpochs_pa
-    eventSteps = file['eventSteps'][:]
-    eventSteps_swe = file['eventSteps_swe'][:]
-    if 'eventSteps_pa' in file.keys():
-        eventSteps_pa = file['eventSteps_pa'][:]
-    else:
-        eventSteps_pa = None
-    swedata = file['swedata'][:]
-    if "padata" in file.keys():
-        padata = file['padata'][:]
+    swedata = file['swe'][:]
+    if "pa" in file.keys():
+        padata = file['pa'][:]
     else:
         padata = None
-    if 'ydata' in file.keys():
-        ydata = file['ydata'][:]
+    if 'y' in file.keys():
+        ydata = file['y'][:]
     else:
         ydata = None
-    eventEpochs = file['eventEpochs'][:]
-    eventEpochs_swe = file['eventEpochs_swe'][:]
-    if 'eventEpochs_pa' in file.keys():
-        eventEpochs_pa = file['eventEpochs_pa'][:]
+    eventEpochs = file['epochy'][:]
+    eventEpochs_swe = file['epochswe'][:]
+    if 'epochpa' in file.keys():
+        eventEpochs_pa = file['epochpa'][:]
     else:
         eventEpochs_pa = None
-    if 'magdata' in file.keys():
-        magdata = file['magdata'][:]
+    if 'mag' in file.keys():
+        magdata = file['mag'][:]
     else:
         magdata = None
     file.close()
-    return eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
-    # return eventSteps, eventSteps_swe, swedata, ydata, eventEpochs, eventEpochs_swe
+    return swedata, padata, magdata, ydata, eventEpochs, eventEpochs_swe, eventEpochs_pa
 
 def Tex(Vp,cons):
     '''

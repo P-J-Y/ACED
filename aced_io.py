@@ -37,7 +37,7 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-plot_features_genesis = ['Vp','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+plot_features_genesis = ['Vp','mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
 # plot_features_genesis = ['Vp','Tp','TextoTp']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
@@ -491,7 +491,7 @@ def genesis_io(args,
     '''
     ——必须的数据7个：
     Vp: 质子速度 Km/s, shape=#timepoints
-    Vp_time: datetime数据类型
+    Vp_time: datetime数据类型,numpy的array
     Np: 质子数密度cm-3, shape=#timepoints
     Np_time: datetime数据类型
     Tp: 质子温度 K, shape=#timepoints
@@ -536,7 +536,7 @@ def genesis_io(args,
         assert 'PA_time' in args, '检测到"PA"数据, 但没有"PA_time"数据，请检查是否输入该时间数据，或检查字典key名称是否正确'
     ### 计算 Tex （根据Vp估计的非ICME太阳风质子温度，对于ICME，质子温度应该远远低于Tex）
     Tp_ex = preprocessing.Tex(args['Vp'],constants) # in K
-    assert args['Tp_time'] == args['Vp_time'], "Tp_time和Vp_time应该是相同的，如果这两个数据时间不同，还应该再插值到Vp_time"
+    assert (args['Tp_time'] == args['Vp_time']).all, "Tp_time和Vp_time应该是相同的，如果这两个数据时间不同，还应该再插值到Vp_time"
     args['TextoTp'] = Tp_ex/args['Tp']
     ### 如果Wb，计算BDE
     if Wb:
@@ -614,40 +614,68 @@ if __name__ == '__main__':
                      list_features = list_features,
                      plot_features = plot_features_genesis,
                      figpath=figpath_genesis):
-        eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName)
+
+        # event
+        # eventSteps, eventSteps_swe, eventSteps_pa, swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(fileName=fileName) # for event
         # eventSteps, eventSteps_swe, swedata, ydata, event_epoch, event_epoch_swe = preprocessing.load_original_data_genesis(fileName=fileName)
+        # eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]  # Np;Tp;Vp;He4top
+        # eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx], eventIdx]
+        # eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # eventsweT = [datetime.datetime.fromtimestamp(t) for t in eventsweT]
+        #
+        # eventT = event_epoch[:eventSteps[0, eventIdx], eventIdx]
+        # eventT = (eventT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # eventT = np.array([datetime.datetime.fromtimestamp(t) for t in eventT])
+        #
+        # args = {
+        #     'Np': eventSWE[0, :], 'Np_time': eventsweT,
+        #     'Tp': eventSWE[1, :], 'Tp_time': eventsweT,
+        #     'Vp': eventSWE[2, :], 'Vp_time': eventsweT,
+        #     'time': eventT,
+        # }
+        # if ydata is not None:
+        #     args['y'] = ydata[:eventSteps[0, eventIdx], eventIdx]
+        # if padata is not None:
+        #     eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
+        #     eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
+        #     eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
+        #     eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
+        #     args['PA'] = eventPA
+        #     args['PA_time'] = eventpaT
+        # if eventSWE.shape[0] == 4:
+        #     args['NHetoNp'] = eventSWE[3, :]
+        #     args['NHetoNp_time'] = eventsweT
 
-        eventSWE = swedata[:, :eventSteps_swe[0, eventIdx], eventIdx]  # Np;Tp;Vp;He4top
-        eventsweT = event_epoch_swe[:eventSteps_swe[0, eventIdx], eventIdx]
-        eventsweT = (eventsweT - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventsweT = [datetime.datetime.fromtimestamp(t) for t in eventsweT]
-
-        eventT = event_epoch[:eventSteps[0, eventIdx], eventIdx]
-        eventT = (eventT - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventT = np.array([datetime.datetime.fromtimestamp(t) for t in eventT])
-
+        # tot
+        swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(
+            fileName=fileName)  # for tot
+        swet = (event_epoch_swe - 719529.0) * 86400.0 - 8.0 * 3600.0
+        swet = np.array([datetime.datetime.fromtimestamp(t) for t in swet[0,:]])
+        pat = (event_epoch_pa - 719529.0) * 86400.0 - 8.0 * 3600.0
+        pat = np.array([datetime.datetime.fromtimestamp(t) for t in pat[0,:]])
+        yt = (event_epoch - 719529.0) * 86400.0 - 8.0 * 3600.0
+        yt = np.array([datetime.datetime.fromtimestamp(t) for t in yt[0,:]])
         args = {
-            'Np': eventSWE[0, :], 'Np_time': eventsweT,
-            'Tp': eventSWE[1, :], 'Tp_time': eventsweT,
-            'Vp': eventSWE[2, :], 'Vp_time': eventsweT,
-            'time': eventT,
+            'Np': swedata[0, :], 'Np_time': swet,
+            'Tp': swedata[1, :], 'Tp_time': swet,
+            'Vp': swedata[2, :], 'Vp_time': swet,
+            'time': yt,
         }
         if ydata is not None:
-            args['y'] = ydata[:eventSteps[0, eventIdx], eventIdx]
+            args['y'] = ydata[0,:]
         if padata is not None:
-            eventPA = padata[:, :eventSteps_pa[0, eventIdx], eventIdx]
-            eventpaT = event_epoch_pa[:eventSteps_pa[0, eventIdx], eventIdx]
-            eventpaT = (eventpaT - 719529.0) * 86400.0 - 8.0 * 3600.0
-            eventpaT = [datetime.datetime.fromtimestamp(t) for t in eventpaT]
-            args['PA'] = eventPA
-            args['PA_time'] = eventpaT
-        if eventSWE.shape[0] == 4:
-            args['NHetoNp'] = eventSWE[3, :]
-            args['NHetoNp_time'] = eventsweT
-
-        args_avg = genesis_io(args, test=True, Wa=1, Wb=1, ifplot=1, plot_features=plot_features)
+            args['PA'] = padata
+            args['PA_time'] = pat
+        if swedata.shape[0] == 4:
+            args['NHetoNp'] = swedata[3, :]
+            args['NHetoNp_time'] = swet
+        if magdata is not None:
+            args['mag'] = magdata[0, :]
+            args['mag_time'] = yt
+        args_avg = genesis_io(args, test=True, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
         if args_avg is not None:
             cmelist = listIcmes(args_avg, list_features=list_features,savejson=True,filename='genesis_icme.json')
+
         print('genesis test done!')
 
     ### SWICS
@@ -750,8 +778,8 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    # test_genesis(eventIdx=11,fileName='data/eval/Genesis/dscovr_origin_data.mat',list_features=list_features,plot_features=['Vp','Tp','TextoTp','TOCME'])
-    test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
+    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
+    # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
     # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot1.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
 
 
