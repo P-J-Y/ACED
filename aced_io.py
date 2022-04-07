@@ -38,7 +38,7 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-plot_features_genesis = ['Vp','mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+plot_features_genesis = ['Vp','Mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
 # plot_features_genesis = ['Vp','Tp','TextoTp']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
@@ -91,96 +91,285 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
                  plot_features=plot_features_genesis,
                  figpath=figpath_genesis,) :
 
-    plot_in_args = ['Vp','TextoTp','NHetoNp',]
+    plot_in_args = ['Vp','TextoTp','NHetoNp','Mag']
     plot_in_args_avg = ['TOCME','Be']
-    feature2title = {'Vp':'Vp Km/s','Tp':'Tp 10$^4$K','TextoTp':'Tex/Tp','NHetoNp':'N$_{He}$/Np','Be':'BDE','TOCME':'TOCME'}
+    feature2title = {'Vp':'Vp Km/s','Tp':'Tp 10<sup>4</sup>K','TextoTp':'Tex/Tp','NHetoNp':'N<sub>He</sub>/Np','Be':'BDE','TOCME':'TOCME','PA':'PA(#) °(dB)','Mag':'B nT'}
     feature2time = {'Vp': 'Vp_time',
                     'Tp': 'Tp_time',
                     'TextoTp': 'Vp_time',
                     'NHetoNp': 'NHetoNp_time',
                     'PA': 'PA_time',
                     'Be': 'time',
-                    'TOCME': 'time'}
+                    'TOCME': 'time',
+                    'Mag': 'Mag_time',
+                    }
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,
-                            ncols=1,
-                            figsize=(9,1.5*panelnum),
-                            gridspec_kw = {'wspace':0, 'hspace':0})
+    # fig,axes = plt.subplots(nrows=panelnum,
+    #                         ncols=1,
+    #                         figsize=(9,1.5*panelnum),
+    #                         gridspec_kw = {'wspace':0, 'hspace':0})
+    #
+    # if eval is not None:
+    #     axes[0].set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+    #     for i in range(eventnum):
+    #         if i == 0:
+    #             line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    #     for i in range(len(ys)):
+    #         if i ==0:
+    #             line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+    #     for i in range(len(eval['overlap'])):
+    #         if i == 0:
+    #             line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+    #     axes[-1].legend(handles=[line1, line2, line3], labels=['Genesis', 'list', 'overlap'])
+    #
+    # else:
+    #     axes[0].set_title('Genesis', fontsize=16)
+    #     for i in range(eventnum):
+    #         axes[-1].plot([icmes[i][0], icmes[i][1]], [2 / 4, 2 / 4], 'r-', linewidth=3)
+    # # set ylabel
+    # axes[-1].set_ylabel('ICME', fontsize=16)
+    # # set xlabel
+    # axes[-1].set_xlabel('Time', fontsize=16)
+    # # set xlim
+    # axes[-1].set_xlim(args['time'][0], args['time'][-1])
+    # # set ylim
+    # axes[-1].set_ylim([0, 1])
+    # # close y ticks
+    # axes[-1].set_yticklabels([])
+    #
+    # for i in range(len(plot_features)):
+    #     if plot_features[i] not in args and plot_features[i] not in args_avg:
+    #         continue
+    #     if plot_features[i] in plot_in_args:
+    #         axes[i].plot(args[feature2time[plot_features[i]]], args[plot_features[i]], 'b-', linewidth=1)
+    #         axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+    #         axes[i].set_xlim(args['time'][0], args['time'][-1])
+    #         axes[i].set_xticklabels([])
+    #         if plot_features[i] in ['Be','TOCME']:
+    #             axes[i].set_ylim([0, 1])
+    #     elif plot_features[i] in plot_in_args_avg:
+    #         axes[i].plot(args_avg[feature2time[plot_features[i]]], args_avg[plot_features[i]], 'b-', linewidth=1)
+    #         axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+    #         axes[i].set_xlim(args['time'][0], args['time'][-1])
+    #         axes[i].set_xticklabels([])
+    #         if plot_features[i] in ['Be','TOCME']:
+    #             axes[i].set_ylim([0, 1])
+    #     elif plot_features[i] == 'PA':
+    #         anglenum = np.shape(args['PA'])[0]
+    #         deltaangle = 180 / anglenum
+    #         angles = np.arange(0, 180, deltaangle)+deltaangle/2
+    #         X,Y = np.meshgrid(args['PA_time'],angles)
+    #         axes[i].contourf(X,Y,10*np.log10(args['PA']),cmap='jet')
+    #         axes[i].set_ylabel('PA(#) °(dB)', fontsize=16)
+    #         axes[i].set_xticklabels([])
+    #         axes[i].set_xlim(args['time'][0], args['time'][-1])
+    #         axes[i].set_ylim([0, 180])
+    #     elif plot_features[i] == 'Tp':
+    #         axes[i].plot(args['Tp_time'], args['Tp'] * 1e-4, 'b-', linewidth=1)
+    #         axes[i].set_ylabel(feature2title['Tp'], fontsize=16)
+    #         axes[i].set_xlim(args['time'][0], args['time'][-1])
+    #         axes[i].set_xticklabels([])
+    #
+    #
+    # # save figure
+    # if not os.path.exists(figpath):
+    #     os.makedirs(figpath)
+    # plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
 
+
+    fig = go.Figure().set_subplots(rows=panelnum,
+                                   cols=1,
+                                   shared_xaxes=True,
+
+                                   )
     if eval is not None:
-        axes[0].set_title('Genesis P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
         for i in range(eventnum):
             if i == 0:
-                line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]], y=[3 / 4, 3 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[3 / 4, 3 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
         for i in range(len(ys)):
             if i ==0:
-                line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[ys[i][0], ys[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='blue', width=10),
+                        name='list',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[ys[i][0], ys[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='blue', width=10),
+                        name='list',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
         for i in range(len(eval['overlap'])):
             if i == 0:
-                line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[eval['overlap'][i][0],
+                           eval['overlap'][i][1]],
+                        y=[1 / 4, 1 / 4],
+                        mode='lines',
+                        line=dict(color='green', width=10),
+                        name='overlap',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
-        axes[-1].legend(handles=[line1, line2, line3], labels=['Genesis', 'list', 'overlap'])
-
+                fig.add_trace(
+                    go.Scatter(
+                        x=[eval['overlap'][i][0], eval['overlap'][i][1]],
+                        y=[1 / 4, 1 / 4],
+                        mode='lines',
+                        line=dict(color='green', width=10),
+                        name='overlap',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
     else:
-        axes[0].set_title('Genesis', fontsize=16)
         for i in range(eventnum):
-            axes[-1].plot([icmes[i][0], icmes[i][1]], [2 / 4, 2 / 4], 'r-', linewidth=3)
-    # set ylabel
-    axes[-1].set_ylabel('ICME', fontsize=16)
-    # set xlabel
-    axes[-1].set_xlabel('Time', fontsize=16)
-    # set xlim
-    axes[-1].set_xlim(args['time'][0], args['time'][-1])
-    # set ylim
-    axes[-1].set_ylim([0, 1])
-    # close y ticks
-    axes[-1].set_yticklabels([])
+            fig.add_trace(
+                go.Scatter(
+                    x=[icmes[i][0], icmes[i][1]],
+                    y=[2 / 4, 2 / 4],
+                    mode='lines',
+                    line=dict(color='red', width=10),
+                    name='ICME',
+                ),
+                row=panelnum,
+                col=1,
+            )
+    fig.update_yaxes(title_text='ICME', range=[0, 1], row=panelnum, col=1)
 
     for i in range(len(plot_features)):
         if plot_features[i] not in args and plot_features[i] not in args_avg:
             continue
         if plot_features[i] in plot_in_args:
-            axes[i].plot(args[feature2time[plot_features[i]]], args[plot_features[i]], 'b-', linewidth=1)
-            axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
-            axes[i].set_xlim(args['time'][0], args['time'][-1])
-            axes[i].set_xticklabels([])
-            if plot_features[i] in ['Be','TOCME']:
-                axes[i].set_ylim([0, 1])
+            fig.add_trace(
+                go.Scatter(
+                    x=args[feature2time[plot_features[i]]],
+                    y=args[plot_features[i]],
+                    mode='lines',
+                    line=dict(color='black', width=1),
+                    name=plot_features[i],
+                    showlegend=False,
+                ),
+                row=i+1,
+                col=1,
+            )
         elif plot_features[i] in plot_in_args_avg:
-            axes[i].plot(args_avg[feature2time[plot_features[i]]], args_avg[plot_features[i]], 'b-', linewidth=1)
-            axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
-            axes[i].set_xlim(args['time'][0], args['time'][-1])
-            axes[i].set_xticklabels([])
-            if plot_features[i] in ['Be','TOCME']:
-                axes[i].set_ylim([0, 1])
+            fig.add_trace(
+                go.Scatter(
+                    x=args_avg[feature2time[plot_features[i]]],
+                    y=args_avg[plot_features[i]],
+                    mode='lines',
+                    line=dict(color='black', width=1),
+                    name=plot_features[i],
+                    showlegend=False,
+                ),
+                row=i+1,
+                col=1,
+            )
         elif plot_features[i] == 'PA':
             anglenum = np.shape(args['PA'])[0]
             deltaangle = 180 / anglenum
             angles = np.arange(0, 180, deltaangle)+deltaangle/2
-            X,Y = np.meshgrid(args['PA_time'],angles)
-            axes[i].contourf(X,Y,10*np.log10(args['PA']),cmap='jet')
-            axes[i].set_ylabel('PA(#) °(dB)', fontsize=16)
-            axes[i].set_xticklabels([])
-            axes[i].set_xlim(args['time'][0], args['time'][-1])
-            axes[i].set_ylim([0, 180])
+            # X,Y = np.meshgrid(args['PA_time'],angles)
+            fig.add_trace(
+                go.Heatmap(
+                    x=args['PA_time'],
+                    y=angles,
+                    z=10*np.log10(args['PA']),
+                    colorscale='Jet',
+                    showscale=False,
+                    name=plot_features[i],
+                    showlegend=False,
+                    type='heatmap',
+                ),
+                row=i+1,
+                col=1,
+            )
         elif plot_features[i] == 'Tp':
-            axes[i].plot(args['Tp_time'], args['Tp'] * 1e-4, 'b-', linewidth=1)
-            axes[i].set_ylabel(feature2title['Tp'], fontsize=16)
-            axes[i].set_xlim(args['time'][0], args['time'][-1])
-            axes[i].set_xticklabels([])
+            fig.add_trace(
+                go.Scatter(
+                    x=args['time'],
+                    y=args[plot_features[i]]/10000,
+                    mode='lines',
+                    line=dict(color='black', width=1),
+                    name=plot_features[i],
+                    showlegend=False,
+                ),
+                row=i+1,
+                col=1)
+            fig.update_yaxes(title_text=feature2title[plot_features[i]], row=i+1, col=1)
 
+        if plot_features[i] in ['Be', 'TOCME']:
+            fig.update_yaxes(title_text=feature2title[plot_features[i]], range=[0, 1], row=i + 1, col=1)
+        elif plot_features[i] == 'PA':
+            fig.update_yaxes(title_text=feature2title[plot_features[i]], range=[0, 180], row=i + 1, col=1)
+        else:
+            fig.update_yaxes(title_text=feature2title[plot_features[i]], row=i + 1, col=1)
 
-    # save figure
+    fig.update_layout(title_text='XB P={:.2f} R={:.2f}'.
+                      format(eval['precision'], eval['recall']),
+                      legend=dict(
+                          yanchor="bottom",
+                          y=0.01,
+                          xanchor="left",
+                          x=0.01
+                      ),
+                      )
+    # save fig
     if not os.path.exists(figpath):
         os.makedirs(figpath)
-    plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+    py.plot(fig,
+            filename=figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.html',
+            image='svg',
+            )
+
 
 def plot_swics(args,icmes,ys=None,eval=None,
                  plot_features=plot_features_swics,
@@ -189,60 +378,193 @@ def plot_swics(args,icmes,ys=None,eval=None,
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
-    fig,axes = plt.subplots(nrows=panelnum,
-                            ncols=1,
-                            figsize=(10,3*panelnum),
-                            gridspec_kw = {'wspace':0, 'hspace':0})
+    # fig,axes = plt.subplots(nrows=panelnum,
+    #                         ncols=1,
+    #                         figsize=(10,3*panelnum),
+    #                         gridspec_kw = {'wspace':0, 'hspace':0})
+    #
+    # if eval is not None:
+    #     axes[0].set_title('SWICS P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
+    #     for i in range(eventnum):
+    #         if i == 0:
+    #             line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+    #     for i in range(len(ys)):
+    #         if i ==0:
+    #             line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+    #     for i in range(len(eval['overlap'])):
+    #         if i == 0:
+    #             line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+    #         else:
+    #             axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+    #     axes[-1].legend(handles=[line1, line2, line3], labels=['SWICS', 'list', 'overlap'])
+    #
+    # else:
+    #     axes[0].set_title('SWICS', fontsize=16)
+    #     for i in range(eventnum):
+    #         axes[-1].plot([icmes[i][0], icmes[i][1]], [2 / 4, 2 / 4], 'r-', linewidth=3)
+    # # set ylabel
+    # axes[-1].set_ylabel('ICME', fontsize=16)
+    # # set xlabel
+    # axes[-1].set_xlabel('Time', fontsize=16)
+    # # set xlim
+    # axes[-1].set_xlim(args['time'][0], args['time'][-1])
+    # # set ylim
+    # axes[-1].set_ylim([0, 1])
+    # # close y ticks
+    # axes[-1].set_yticklabels([])
+    #
+    # for i in range(len(plot_features)):
+    #     axes[i].plot(args['time'], args[plot_features[i]], 'b-', linewidth=1)
+    #     axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
+    #     axes[i].set_xlim(args['time'][0], args['time'][-1])
+    #     axes[i].set_xticklabels([])
+    #
+    # # save figure
+    # if not os.path.exists(figpath):
+    #     os.makedirs(figpath)
+    # plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
 
+    fig = go.Figure().set_subplots(rows=panelnum,
+                                   cols=1,
+                                   shared_xaxes=True,
+
+                                   )
     if eval is not None:
-        axes[0].set_title('SWICS P={:.2f} R={:.2f}'.format(eval['precision'], eval['recall']), fontsize=16)
         for i in range(eventnum):
             if i == 0:
-                line1, = axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]], y=[3 / 4, 3 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([icmes[i][0], icmes[i][1]], [3 / 4, 3 / 4], 'r-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[3 / 4, 3 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
         for i in range(len(ys)):
             if i ==0:
-                line2, = axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[ys[i][0], ys[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='blue', width=10),
+                        name='list',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([ys[i][0], ys[i][1]], [2 / 4, 2 / 4], 'b-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[ys[i][0], ys[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='blue', width=10),
+                        name='list',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
         for i in range(len(eval['overlap'])):
             if i == 0:
-                line3, = axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
+                fig.add_trace(
+                    go.Scatter(
+                        x=[eval['overlap'][i][0],
+                           eval['overlap'][i][1]],
+                        y=[1 / 4, 1 / 4],
+                        mode='lines',
+                        line=dict(color='green', width=10),
+                        name='overlap',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
             else:
-                axes[-1].plot([eval['overlap'][i][0], eval['overlap'][i][1]], [1 / 4, 1 / 4], 'g-', linewidth=3)
-        axes[-1].legend(handles=[line1, line2, line3], labels=['SWICS', 'list', 'overlap'])
-
+                fig.add_trace(
+                    go.Scatter(
+                        x=[eval['overlap'][i][0], eval['overlap'][i][1]],
+                        y=[1 / 4, 1 / 4],
+                        mode='lines',
+                        line=dict(color='green', width=10),
+                        name='overlap',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
     else:
-        axes[0].set_title('SWICS', fontsize=16)
         for i in range(eventnum):
-            axes[-1].plot([icmes[i][0], icmes[i][1]], [2 / 4, 2 / 4], 'r-', linewidth=3)
-    # set ylabel
-    axes[-1].set_ylabel('ICME', fontsize=16)
-    # set xlabel
-    axes[-1].set_xlabel('Time', fontsize=16)
-    # set xlim
-    axes[-1].set_xlim(args['time'][0], args['time'][-1])
-    # set ylim
-    axes[-1].set_ylim([0, 1])
-    # close y ticks
-    axes[-1].set_yticklabels([])
-
+            fig.add_trace(
+                go.Scatter(
+                    x=[icmes[i][0], icmes[i][1]],
+                    y=[2 / 4, 2 / 4],
+                    mode='lines',
+                    line=dict(color='red', width=10),
+                    name='ICME',
+                ),
+                row=panelnum,
+                col=1,
+            )
+    fig.update_yaxes(title_text='ICME', range=[0, 1], row=panelnum, col=1)
     for i in range(len(plot_features)):
-        axes[i].plot(args['time'], args[plot_features[i]], 'b-', linewidth=1)
-        axes[i].set_ylabel(feature2title[plot_features[i]], fontsize=16)
-        axes[i].set_xlim(args['time'][0], args['time'][-1])
-        axes[i].set_xticklabels([])
+        fig.add_trace(
+            go.Scatter(x=args['time'],
+                       y=args[plot_features[i]],
+                       mode='lines',
+                       line=dict(color='black', width=1),
+                       name=plot_features[i],
+                       showlegend=False,
+                       ),
+            row=i + 1,
+            col=1,
+        )
+        fig.update_yaxes(title_text=feature2title[plot_features[i]],
+                         row=i + 1, col=1)
 
-    # save figure
+
+    fig.update_layout(title_text='SWICS P={:.2f} R={:.2f}'.
+                      format(eval['precision'], eval['recall']),
+                      )
+    fig.update_layout(legend=dict(
+        yanchor="bottom",
+        y=0.01,
+        xanchor="left",
+        x=0.01
+    ),
+    )
+    # save fig
     if not os.path.exists(figpath):
         os.makedirs(figpath)
-    plt.savefig(figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.png')
+    py.plot(fig,
+            filename=figpath+'/'+args['time'][0].strftime('%Y%m%d%H%M')+'_'+args['time'][-1].strftime('%Y%m%d%H%M')+'.html',
+            image='svg',
+            )
+
 
 def plot_xb(args,icmes,ys=None,eval=None,
                  plot_features=plot_features_xb,
                  figpath=figpath_xb):
-    feature2title = {'Vp':'Vp Km/s','Np':'Np cm^-3','Tp':'Tp 10^4K','Mag':'B nT'}
+    feature2title = {'Vp':'Vp Km/s','Np':'Np cm<sup>-3</sup>','Tp':'Tp 10<sup>4</sup>K','Mag':'B nT'}
 
     panelnum = len(plot_features)+1
     eventnum = len(icmes)
@@ -259,7 +581,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                     go.Scatter(
                         x=[icmes[i][0], icmes[i][1]], y=[3 / 4, 3 / 4],
                         mode='lines',
-                        line=dict(color='red', width=3),
+                        line=dict(color='red', width=10),
                         name='ICME',
                     ),
                     row=panelnum,
@@ -271,7 +593,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                         x=[icmes[i][0], icmes[i][1]],
                         y=[3 / 4, 3 / 4],
                         mode='lines',
-                        line=dict(color='red', width=3),
+                        line=dict(color='red', width=10),
                         name='ICME',
                         showlegend=False,
                     ),
@@ -285,7 +607,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                         x=[ys[i][0], ys[i][1]],
                         y=[2 / 4, 2 / 4],
                         mode='lines',
-                        line=dict(color='blue', width=3),
+                        line=dict(color='blue', width=10),
                         name='list',
                     ),
                     row=panelnum,
@@ -297,7 +619,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                         x=[ys[i][0], ys[i][1]],
                         y=[2 / 4, 2 / 4],
                         mode='lines',
-                        line=dict(color='blue', width=3),
+                        line=dict(color='blue', width=10),
                         name='list',
                         showlegend=False,
                     ),
@@ -312,7 +634,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                            eval['overlap'][i][1]],
                         y=[1 / 4, 1 / 4],
                         mode='lines',
-                        line=dict(color='green', width=3),
+                        line=dict(color='green', width=10),
                         name='overlap',
                     ),
                     row=panelnum,
@@ -324,7 +646,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                         x=[eval['overlap'][i][0], eval['overlap'][i][1]],
                         y=[1 / 4, 1 / 4],
                         mode='lines',
-                        line=dict(color='green', width=3),
+                        line=dict(color='green', width=10),
                         name='overlap',
                         showlegend=False,
                     ),
@@ -338,7 +660,7 @@ def plot_xb(args,icmes,ys=None,eval=None,
                     x=[icmes[i][0], icmes[i][1]],
                     y=[2 / 4, 2 / 4],
                     mode='lines',
-                    line=dict(color='red', width=3),
+                    line=dict(color='red', width=10),
                     name='ICME',
                 ),
                 row=panelnum,
@@ -377,6 +699,13 @@ def plot_xb(args,icmes,ys=None,eval=None,
     fig.update_layout(title_text='XB P={:.2f} R={:.2f}'.
                       format(eval['precision'], eval['recall']),
                       )
+    fig.update_layout(legend=dict(
+        yanchor="bottom",
+        y=0.01,
+        xanchor="left",
+        x=0.01
+    ),
+    )
     # save fig
     if not os.path.exists(figpath):
         os.makedirs(figpath)
@@ -812,9 +1141,11 @@ if __name__ == '__main__':
             args['NHetoNp'] = swedata[3, :]
             args['NHetoNp_time'] = swet
         if magdata is not None:
-            args['mag'] = magdata[0, :]
-            args['mag_time'] = yt
+            args['Mag'] = magdata[0, :]
+            args['Mag_time'] = yt
         args_avg = genesis_io(args, test=True, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
+        if 'Mag' in args.keys():
+            args_avg['Mag'] = args['Mag']
         if args_avg is not None:
             cmelist = listIcmes(args_avg, list_features=list_features,savejson=True,filename='genesis_icme.json')
 
@@ -920,6 +1251,7 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    # test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
-    test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
+    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2001_04.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
+
+    # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
     # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot1.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
