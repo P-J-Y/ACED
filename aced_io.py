@@ -353,7 +353,7 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
         else:
             fig.update_yaxes(title_text=feature2title[plot_features[i]], row=i + 1, col=1)
 
-    fig.update_layout(title_text='XB P={:.2f} R={:.2f}'.
+    fig.update_layout(title_text='Genesis P={:.2f} R={:.2f}'.
                       format(eval['precision'], eval['recall']),
                       legend=dict(
                           yanchor="bottom",
