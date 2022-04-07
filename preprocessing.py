@@ -96,7 +96,7 @@ def Tex(Vp,cons):
 
     return Tex
 
-def BDE(PA,threshold=2):
+def BDE(PA,threshold=2.7):
     # bi-directional electron stream
     # PA 20*timepoints
     ############ 阈值还需要确定 #############

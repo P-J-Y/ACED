@@ -337,6 +337,7 @@ def XB(args):
 ################## Genesis ##################
 from preprocessing import *
 
+
 def ToCME(tnow,
           Tshock,
           TextoTp,
@@ -380,10 +381,26 @@ def ToCME(tnow,
            Yb = cons['CB3'] * Be - cons['CB4']
        else:
            Yb = 0
-   Yt = Yt > 1.0
-   Ya = Ya > 1.0
-   Yb = Yb > 1.0
-   return (Yt + Ya * Wa + Yb * Wb) / (1 + Wa + Wb)
+   if Yt > 1.0:
+        Yt = 1.0
+   elif Yt < 0.0:
+        Yt = 0.0
+   if Ya > 1.0:
+        Ya = 1.0
+   elif Ya < 0.0:
+        Ya = 0.0
+   if Yb > 1.0:
+        Yb = 1.0
+   elif Yb < 0.0:
+        Yb = 0.0
+
+
+   if Wa:
+        return (Yt + Ya * Wa + Yb * Wb) / (1 + Wa + Wb)
+   else:
+        return (Yt + Ya * Wa + Yb * Wb) / (2 + Wb)
+
+
 
 def Genesis(args,cons,Wa=1,Wb=0):
 

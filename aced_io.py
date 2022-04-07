@@ -25,10 +25,10 @@ import evaluate
 
 ################ constants ################
 constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
-                     'CB1':2,'CB2':0.1,'CB3':2.5,'CB4':0.1,
-                     'CT1':1,'CT2':0,'CT3':1.5,'CT4':0,
+                     'CB1':3,'CB2':1.5,'CB3':2,'CB4':1.,
+                     'CT1':0.2,'CT2':1.3,'CT3':0.15,'CT4':1,
                      'ctime1':datetime.timedelta(hours=5),'ctime2':datetime.timedelta(hours=25), # for tocme
-                     'BDE_threshold':2.0,
+                     'BDE_threshold':2.5,# 这是我根据ACE的数据调整的
                      'Vcut':500.0,'C1':2.6e4,'C2':316.2,'C3':0.961,'C4':-1.42e5,'C5':510.0,'C6':0, # for Tex
                      't_avg':datetime.timedelta(hours=1), # for averaging
                      'Aout':0.06,'Tout':1.5,'Bout':0.4,
@@ -778,7 +778,7 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
+    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2001_04.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
     # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
     # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot1.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
 
