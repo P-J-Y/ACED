@@ -1,3 +1,6 @@
 
 *.png
 *.png
+*.nc
+*.gz
+*.nc

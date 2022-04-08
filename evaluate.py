@@ -227,7 +227,10 @@ def loaddata_xb(fileName = 'data/eval/XB/datatot.mat'):
     # tot
     file = h5py.File(fileName)  # "datatot","ytot","timetot",'epochtot'
     xdata = file['datatot'][:]
-    ydata = file['ytot'][:]
+    if 'ytot' in file.keys():
+        ydata = file['ytot'][:]
+    else:
+        ydata = None
     eventTimes = file['epochtot'][:]
     return xdata,ydata,eventTimes
 

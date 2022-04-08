@@ -21,6 +21,7 @@ import plotly.offline as py
 import plotly.graph_objects as go
 import preprocessing
 import evaluate
+import loadData
 
 
 
@@ -38,8 +39,8 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-plot_features_genesis = ['Vp','Mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
-# plot_features_genesis = ['Vp','Tp','TextoTp']
+# plot_features_genesis = ['Vp','Mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+plot_features_genesis = ['Vp','Mag','Tp','TextoTp','TOCME']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
 plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
@@ -191,6 +192,9 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
 
                                    )
     if eval is not None:
+        fig.update_layout(title_text='Genesis P={:.2f} R={:.2f}'.
+                          format(eval['precision'], eval['recall']),
+                          )
         for i in range(eventnum):
             if i == 0:
                 fig.add_trace(
@@ -270,18 +274,41 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
                     col=1,
                 )
     else:
+        fig.update_layout(title_text='Genesis',
+                          )
         for i in range(eventnum):
-            fig.add_trace(
-                go.Scatter(
-                    x=[icmes[i][0], icmes[i][1]],
-                    y=[2 / 4, 2 / 4],
-                    mode='lines',
-                    line=dict(color='red', width=10),
-                    name='ICME',
-                ),
-                row=panelnum,
-                col=1,
-            )
+            if i==0:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
+            else:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
+    fig.update_layout(legend=dict(
+        yanchor="bottom",
+        y=0.01,
+        xanchor="left",
+        x=0.01
+    ),
+    )
     fig.update_yaxes(title_text='ICME', range=[0, 1], row=panelnum, col=1)
 
     for i in range(len(plot_features)):
@@ -353,15 +380,7 @@ def plot_genesis(args,args_avg,icmes,ys=None,eval=None,
         else:
             fig.update_yaxes(title_text=feature2title[plot_features[i]], row=i + 1, col=1)
 
-    fig.update_layout(title_text='Genesis P={:.2f} R={:.2f}'.
-                      format(eval['precision'], eval['recall']),
-                      legend=dict(
-                          yanchor="bottom",
-                          y=0.01,
-                          xanchor="left",
-                          x=0.01
-                      ),
-                      )
+
     # save fig
     if not os.path.exists(figpath):
         os.makedirs(figpath)
@@ -434,6 +453,9 @@ def plot_swics(args,icmes,ys=None,eval=None,
 
                                    )
     if eval is not None:
+        fig.update_layout(title_text='SWICS P={:.2f} R={:.2f}'.
+                          format(eval['precision'], eval['recall']),
+                          )
         for i in range(eventnum):
             if i == 0:
                 fig.add_trace(
@@ -513,18 +535,34 @@ def plot_swics(args,icmes,ys=None,eval=None,
                     col=1,
                 )
     else:
+        fig.update_layout(title_text='SWICS',
+                          )
         for i in range(eventnum):
-            fig.add_trace(
-                go.Scatter(
-                    x=[icmes[i][0], icmes[i][1]],
-                    y=[2 / 4, 2 / 4],
-                    mode='lines',
-                    line=dict(color='red', width=10),
-                    name='ICME',
-                ),
-                row=panelnum,
-                col=1,
-            )
+            if i==0:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
+            else:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
     fig.update_yaxes(title_text='ICME', range=[0, 1], row=panelnum, col=1)
     for i in range(len(plot_features)):
         fig.add_trace(
@@ -541,10 +579,6 @@ def plot_swics(args,icmes,ys=None,eval=None,
         fig.update_yaxes(title_text=feature2title[plot_features[i]],
                          row=i + 1, col=1)
 
-
-    fig.update_layout(title_text='SWICS P={:.2f} R={:.2f}'.
-                      format(eval['precision'], eval['recall']),
-                      )
     fig.update_layout(legend=dict(
         yanchor="bottom",
         y=0.01,
@@ -575,6 +609,9 @@ def plot_xb(args,icmes,ys=None,eval=None,
 
                                    )
     if eval is not None:
+        fig.update_layout(title_text='XB P={:.2f} R={:.2f}'.
+                          format(eval['precision'], eval['recall']),
+                          )
         for i in range(eventnum):
             if i == 0:
                 fig.add_trace(
@@ -654,18 +691,34 @@ def plot_xb(args,icmes,ys=None,eval=None,
                     col=1,
                 )
     else:
+        fig.update_layout(title_text='XB',
+                          )
         for i in range(eventnum):
-            fig.add_trace(
-                go.Scatter(
-                    x=[icmes[i][0], icmes[i][1]],
-                    y=[2 / 4, 2 / 4],
-                    mode='lines',
-                    line=dict(color='red', width=10),
-                    name='ICME',
-                ),
-                row=panelnum,
-                col=1,
-            )
+            if i == 0:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
+            else:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[icmes[i][0], icmes[i][1]],
+                        y=[2 / 4, 2 / 4],
+                        mode='lines',
+                        line=dict(color='red', width=10),
+                        name='ICME',
+                        showlegend=False,
+                    ),
+                    row=panelnum,
+                    col=1,
+                )
     fig.update_yaxes(title_text='ICME', range=[0, 1], row=panelnum, col=1)
 
     for i in range(len(plot_features)):
@@ -696,9 +749,6 @@ def plot_xb(args,icmes,ys=None,eval=None,
             )
             fig.update_yaxes(title_text=feature2title[plot_features[i]],
                              row=i+1, col=1)
-    fig.update_layout(title_text='XB P={:.2f} R={:.2f}'.
-                      format(eval['precision'], eval['recall']),
-                      )
     fig.update_layout(legend=dict(
         yanchor="bottom",
         y=0.01,
@@ -1118,14 +1168,20 @@ if __name__ == '__main__':
         #     args['NHetoNp_time'] = eventsweT
 
         # tot
-        swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(
-            fileName=fileName)  # for tot
-        swet = (event_epoch_swe - 719529.0) * 86400.0 - 8.0 * 3600.0
-        swet = np.array([datetime.datetime.fromtimestamp(t) for t in swet[0,:]])
-        pat = (event_epoch_pa - 719529.0) * 86400.0 - 8.0 * 3600.0
-        pat = np.array([datetime.datetime.fromtimestamp(t) for t in pat[0,:]])
-        yt = (event_epoch - 719529.0) * 86400.0 - 8.0 * 3600.0
-        yt = np.array([datetime.datetime.fromtimestamp(t) for t in yt[0,:]])
+        # swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(
+        #     fileName=fileName)  # for tot
+        # swet = (event_epoch_swe - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # swet = np.array([datetime.datetime.fromtimestamp(t) for t in swet[0,:]])
+        # yt = (event_epoch - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # yt = np.array([datetime.datetime.fromtimestamp(t) for t in yt[0,:]])
+
+        ########### dscovr from loadData ###########
+        swedata, magdata, yt, swet = loadData.outputdata_genesis(filepath=fileName)
+        swedata = swedata.T
+        ydata = None
+        padata = None
+        event_epoch_pa = None
+
         args = {
             'Np': swedata[0, :], 'Np_time': swet,
             'Tp': swedata[1, :], 'Tp_time': swet,
@@ -1135,6 +1191,8 @@ if __name__ == '__main__':
         if ydata is not None:
             args['y'] = ydata[0,:]
         if padata is not None:
+            pat = (event_epoch_pa - 719529.0) * 86400.0 - 8.0 * 3600.0
+            pat = np.array([datetime.datetime.fromtimestamp(t) for t in pat[0, :]])
             args['PA'] = padata
             args['PA_time'] = pat
         if swedata.shape[0] == 4:
@@ -1179,7 +1237,7 @@ if __name__ == '__main__':
             'y': ydata[:,0],
         }
 
-        swics_io(args, test=True, ifplot=True, plot_features=plot_features,figpath=figpath)
+        swics_io(args, test=False, ifplot=True, plot_features=plot_features,figpath=figpath)
         if args['icmes'] is not None:
             icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='swics_icmes.json')
         print('swics test done!')
@@ -1203,16 +1261,25 @@ if __name__ == '__main__':
         # }
         xdata, ydata, eventTime = evaluate.loaddata_xb(fileName=fileName)  # for tot
         eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:,0]])
+        # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[0,:]])
+        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:, 0]])
         args = {
             'time': eventTime,
+            # 'Vp': xdata[2, :],
             'Vp': xdata[:, 2],
+            # 'Tp': xdata[1, :],
             'Tp': xdata[:, 1],
+            # 'Np': xdata[0, :],
             'Np': xdata[:, 0],
+            # 'Mag': xdata[3, :],
             'Mag': xdata[:, 3],
-            'y': ydata[:,0],
+            # 'y': ydata[:,0],
         }
-        xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb,figpath=figpath)
+        if ydata is not None:
+            args['y'] = ydata[:,0]
+            xb_io(args, test=True, ifplot=True, plot_features=plot_features_xb,figpath=figpath)
+        else:
+            xb_io(args, test=False, ifplot=True, plot_features=plot_features_xb,figpath=figpath)
         if args['icmes'] is not None:
             icmelist = listIcmes(args, list_features=list_features,savejson=True,filename='xb_icmes.json')
         print('xb test done!')
@@ -1251,7 +1318,8 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2001_04.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
-
+    # test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2002.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
+    test_genesis(eventIdx=11, fileName='data/origin/DSCOVR/data/2022/01', list_features=list_features,
+                 plot_features=plot_features_genesis, figpath=figpath_genesis)
     # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
-    # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot1.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
+    # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot2.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
