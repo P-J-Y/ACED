@@ -1265,7 +1265,7 @@ if __name__ == '__main__':
         # # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[0,:]])
         # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:, 0]])
 
-        xdata, eventTime = loadData.outputdata_xb(fileName=fileName)
+        xdata, eventTime = loadData.outputdata_xb(filepath=fileName)
         ydata = None
         args = {
             'time': eventTime,
@@ -1323,7 +1323,8 @@ if __name__ == '__main__':
 
 
     # test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2002.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
-    test_genesis(eventIdx=11, fileName='data/origin/DSCOVR/data/2022/01', list_features=list_features,
-                 plot_features=plot_features_genesis, figpath=figpath_genesis)
+    # test_genesis(eventIdx=11, fileName='data/origin/DSCOVR/data/2022/01', list_features=list_features,
+    #              plot_features=plot_features_genesis, figpath=figpath_genesis)
     # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
+    test_xb(eventIdx=11, fileName='data/origin/DSCOVR/data/2022', list_features=list_features)
     # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot2.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
