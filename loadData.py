@@ -108,11 +108,6 @@ def outputdata_xb(filepath='data/origin/DSCOVR/data/2022'):
     xdata = np.append(swe,b.reshape(len(b),1),axis=1)
     return xdata, yt
 
-
-outputdata_xb()
-
-
-
 # time
 # proton_speed
 # proton_density
@@ -121,4 +116,5 @@ outputdata_xb()
 #
 # time
 # bt
-print('test')
+if __name__ == '__main__':
+    pass
