@@ -89,6 +89,29 @@ def outputdata_genesis(filepath='data/origin/DSCOVR/data/2022/01'):
     b = np.interp([datetime.datetime.timestamp(t) for t in yt], [datetime.datetime.timestamp(t) for t in magt], mag)
     return swe, b, yt, swet
 
+def outputdata_xb(filepath='data/origin/DSCOVR/data/2022'):
+    iondata = []
+    magdata = []
+    for path in listdir(filepath):
+        thepath = join(filepath, path)
+        theiondata, themagdata = loadData(thepath)
+        iondata.extend(theiondata)
+        magdata.extend(themagdata)
+    swe, swet = loadIonData(iondata)
+    mag, magt = loadMagData(magdata)
+    t1 = max(swet[0],magt[0])
+    t2 = min(swet[-1], magt[-1])
+    yt = datetime_range(t1,t2,datetime.timedelta(hours=1))
+    b = np.interp([datetime.datetime.timestamp(t) for t in yt], [datetime.datetime.timestamp(t) for t in magt], mag)
+    swe = [np.interp([datetime.datetime.timestamp(t) for t in yt], [datetime.datetime.timestamp(t) for t in swet], swe[:,i]) for i in range(swe.shape[1])]
+    swe = np.array(swe).T
+    xdata = np.append(swe,b.reshape(len(b),1),axis=1)
+    return xdata, yt
+
+
+outputdata_xb()
+
+
 
 # time
 # proton_speed

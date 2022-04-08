@@ -1259,10 +1259,13 @@ if __name__ == '__main__':
         #     'Mag': xdata[3, :eventSteps[0, eventIdx], eventIdx],
         #     'y': ydata[:eventSteps[0, eventIdx], eventIdx],
         # }
-        xdata, ydata, eventTime = evaluate.loaddata_xb(fileName=fileName)  # for tot
-        eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
-        # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[0,:]])
-        eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:, 0]])
+        # xdata, ydata, eventTime = evaluate.loaddata_xb(fileName=fileName)  # for tot
+        # eventTime = (eventTime - 719529.0) * 86400.0 - 8.0 * 3600.0
+        # # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[0,:]])
+        # eventTime = np.array([datetime.datetime.fromtimestamp(t) for t in eventTime[:, 0]])
+
+        xdata, eventTime = loadData.outputdata_xb(fileName=fileName)
+        ydata = None
         args = {
             'time': eventTime,
             # 'Vp': xdata[2, :],
