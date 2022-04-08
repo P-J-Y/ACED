@@ -33,7 +33,7 @@ constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'BDE_threshold':2.5,# 这是我根据ACE的数据调整的
                      'Vcut':500.0,'C1':2.6e4,'C2':316.2,'C3':0.961,'C4':-1.42e5,'C5':510.0,'C6':0, # for Tex
                      't_avg':datetime.timedelta(hours=1), # for averaging
-                     'Aout':0.06,'Tout':1.5,'Bout':0.4,
+                     'Aout':0.06,'Tout':2.0,'Bout':0.4,
                      # Tout=1.5 可能有点太小了，容易把ICME过多的识别
                      'tstay':datetime.timedelta(hours=18), 'tlag':datetime.timedelta(hours=6), 'tocme_threshold':0.4, # for genesis
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
@@ -1168,19 +1168,20 @@ if __name__ == '__main__':
         #     args['NHetoNp_time'] = eventsweT
 
         # tot
-        # swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(
-        #     fileName=fileName)  # for tot
-        # swet = (event_epoch_swe - 719529.0) * 86400.0 - 8.0 * 3600.0
-        # swet = np.array([datetime.datetime.fromtimestamp(t) for t in swet[0,:]])
-        # yt = (event_epoch - 719529.0) * 86400.0 - 8.0 * 3600.0
-        # yt = np.array([datetime.datetime.fromtimestamp(t) for t in yt[0,:]])
+        swedata, padata, magdata, ydata, event_epoch, event_epoch_swe, event_epoch_pa = preprocessing.load_original_data_genesis(
+            fileName=fileName)  # for tot
+        swet = (event_epoch_swe - 719529.0) * 86400.0 - 8.0 * 3600.0
+        swet = np.array([datetime.datetime.fromtimestamp(t) for t in swet[0,:]])
+        yt = (event_epoch - 719529.0) * 86400.0 - 8.0 * 3600.0
+        yt = np.array([datetime.datetime.fromtimestamp(t) for t in yt[0,:]])
 
-        ########### dscovr from loadData ###########
-        swedata, magdata, yt, swet = loadData.outputdata_genesis(filepath=fileName)
-        swedata = swedata.T
-        ydata = None
-        padata = None
-        event_epoch_pa = None
+        # ########### dscovr from loadData ###########
+        # swedata, magdata, yt, swet = loadData.outputdata_genesis(filepath=fileName)
+        # swedata = swedata.T
+        # ydata = None
+        # padata = None
+        # event_epoch_pa = None
+        ############################################
 
         args = {
             'Np': swedata[0, :], 'Np_time': swet,
@@ -1202,7 +1203,7 @@ if __name__ == '__main__':
             # args['Mag'] = magdata[0, :]
             args['Mag'] = magdata
             args['Mag_time'] = yt
-        args_avg = genesis_io(args, test=False, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
+        args_avg = genesis_io(args, test=True, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
         if 'Mag' in args.keys():
             args_avg['Mag'] = args['Mag']
         if args_avg is not None:
@@ -1322,9 +1323,9 @@ if __name__ == '__main__':
         print('nn test done!')
 
 
-    # test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2002.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
-    # test_genesis(eventIdx=11, fileName='data/origin/DSCOVR/data/2022/01', list_features=list_features,
+    test_genesis(eventIdx=11,fileName='data/eval/Genesis/datatot_2002.mat',list_features=list_features,plot_features=plot_features_genesis,figpath=figpath_genesis)
+    # test_genesis(eventIdx=11, fileName='data/origin/DSCOVR/data/2022/02', list_features=list_features,
     #              plot_features=plot_features_genesis, figpath=figpath_genesis)
     # test_xb(eventIdx=11,fileName='data/eval/XB/datatot.mat',list_features=list_features)
-    test_xb(eventIdx=11, fileName='data/origin/DSCOVR/data/2022', list_features=list_features)
+    # test_xb(eventIdx=11, fileName='data/origin/DSCOVR/data/2022', list_features=list_features)
     # test_swics(eventIdx=200,fileName='data/eval/SWICS/datatot2.mat',list_features=list_features,plot_features=plot_features_swics,figpath=figpath_swics)
