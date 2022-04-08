@@ -1199,9 +1199,10 @@ if __name__ == '__main__':
             args['NHetoNp'] = swedata[3, :]
             args['NHetoNp_time'] = swet
         if magdata is not None:
-            args['Mag'] = magdata[0, :]
+            # args['Mag'] = magdata[0, :]
+            args['Mag'] = magdata
             args['Mag_time'] = yt
-        args_avg = genesis_io(args, test=True, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
+        args_avg = genesis_io(args, test=False, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
         if 'Mag' in args.keys():
             args_avg['Mag'] = args['Mag']
         if args_avg is not None:
