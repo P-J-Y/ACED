@@ -28,19 +28,19 @@ import loadData
 ################ constants ################
 constants_genesis = {'CA1':23,'CA2':1.15,'CA3':16.67,'CA4':1.0,
                      'CB1':3,'CB2':1.5,'CB3':2,'CB4':1.,
-                     'CT1':0.2,'CT2':1.3,'CT3':0.15,'CT4':1,
+                     'CT1':0.2,'CT2':1.3,'CT3':0.14,'CT4':1,
                      'ctime1':datetime.timedelta(hours=5),'ctime2':datetime.timedelta(hours=25), # for tocme
                      'BDE_threshold':2.5,# 这是我根据ACE的数据调整的
                      'Vcut':500.0,'C1':2.6e4,'C2':316.2,'C3':0.961,'C4':-1.42e5,'C5':510.0,'C6':0, # for Tex
                      't_avg':datetime.timedelta(hours=1), # for averaging
-                     'Aout':0.06,'Tout':2.0,'Bout':0.4,
+                     'Aout':0.06,'Tout':3.0,'Bout':0.4,
                      # Tout=1.5 可能有点太小了，容易把ICME过多的识别
                      'tstay':datetime.timedelta(hours=18), 'tlag':datetime.timedelta(hours=6), 'tocme_threshold':0.4, # for genesis
                      'Vjump':40,'RN':1.4,'RT':1.5, # for shock
                      }
 
-# plot_features_genesis = ['Vp','Mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
-plot_features_genesis = ['Vp','Mag','Tp','TextoTp','TOCME']
+plot_features_genesis = ['Vp','Mag','Tp','TextoTp','NHetoNp','PA','Be','TOCME']
+# plot_features_genesis = ['Vp','Mag','Tp','TextoTp','TOCME']
 plot_features_swics = ['Vp','O76']
 plot_features_xb = ['Vp','Np','Tp','Mag']
 plot_features_nn = ['Vp','Np','Tp','Mag','dbrms','PA','delta','lambda']
@@ -1200,8 +1200,8 @@ if __name__ == '__main__':
             args['NHetoNp'] = swedata[3, :]
             args['NHetoNp_time'] = swet
         if magdata is not None:
-            # args['Mag'] = magdata[0, :]
-            args['Mag'] = magdata
+            args['Mag'] = magdata[0, :]
+            # args['Mag'] = magdata
             args['Mag_time'] = yt
         args_avg = genesis_io(args, test=True, Wa=1,Wb=1,ifplot=1,plot_features=plot_features,figpath=figpath)
         if 'Mag' in args.keys():
